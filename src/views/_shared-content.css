@@ -1,0 +1,147 @@
+/* ── Shared content styles for list/detail views (Warm Tone) ── */
+/* Layout chrome (sidebar/header/overlay) is provided by DefaultLayout. */
+
+/* ── Page Header ── */
+.page-header-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; gap: 16px; }
+.page-header { margin-bottom: 24px; }
+.page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; line-height: 1.3; }
+.page-desc { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Card ── */
+.card { background: var(--warm-white); border-radius: var(--radius-lg); border: 1px solid var(--sand); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; transition: box-shadow var(--transition); }
+.card:hover { box-shadow: var(--shadow-md); }
+.card-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--cream-dark); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.card-title { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.2px; }
+.card-body { padding: 24px; }
+
+/* ── Filter Bar ── */
+.filter-bar { padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.filter-group { display: flex; align-items: center; gap: 8px; }
+
+/* ── Form Controls ── */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+.form-input, input, select, textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); background: var(--cream); font-size: 13.5px; color: var(--text-primary); outline: none; transition: border-color var(--transition), box-shadow var(--transition), background var(--transition); line-height: 1.5; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); background: var(--warm-white); box-shadow: 0 0 0 3px rgba(201,125,78,0.10); }
+select { cursor: pointer; }
+
+/* ── Tag Input ── */
+.tag-input-container { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); background: var(--cream); min-height: 42px; align-items: center; transition: border-color var(--transition), box-shadow var(--transition), background var(--transition); }
+.tag-input-container:focus-within { border-color: var(--accent); background: var(--warm-white); box-shadow: 0 0 0 3px rgba(201,125,78,0.10); }
+.tag-input-container input { border: none; background: transparent; box-shadow: none; flex: 1; min-width: 80px; padding: 4px 6px; }
+.tag-input-container input:focus { border: none; box-shadow: none; background: transparent; }
+.tag-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; background: var(--accent-light); color: var(--brown-dark); border-radius: 12px; font-size: 12px; font-weight: 600; }
+.tag-chip-remove { cursor: pointer; opacity: 0.6; font-size: 14px; line-height: 1; }
+.tag-chip-remove:hover { opacity: 1; }
+
+/* ── Visibility Toggle ── */
+.visibility-toggle { display: flex; gap: 8px; }
+.visibility-option { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); background: var(--cream); cursor: pointer; font-size: 13.5px; font-weight: 500; color: var(--text-secondary); transition: all var(--transition); }
+.visibility-option:hover { border-color: var(--sand-dark); }
+.visibility-option.selected { border-color: var(--accent); background: var(--accent-light); color: var(--brown-dark); font-weight: 600; }
+.visibility-option svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ── Bible Reference ── */
+.bible-reference { display: grid; grid-template-columns: 1fr 20px 1fr; align-items: center; gap: 8px; }
+.bible-reference .arrow { text-align: center; color: var(--text-muted); font-weight: bold; }
+
+/* ── Basic Info Grid ── */
+.basic-info { display: grid; grid-template-columns: 2fr 1fr 1.5fr 2fr; gap: 20px; }
+
+/* ── Middle Split ── */
+.middle { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; margin-bottom: 20px; }
+.middle-card { background: var(--warm-white); border: 1px solid var(--sand); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; display: flex; flex-direction: column; }
+.middle-header { padding: 20px 24px 0; }
+.middle-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
+
+/* ── Tabs ── */
+.tabs, .reference-tabs { display: flex; border-bottom: 1px solid var(--sand); }
+.tab, .reference-tab { border: 0; background: transparent; padding: 10px 18px; font-size: 13.5px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500; transition: all var(--transition); }
+.tab:hover, .reference-tab:hover { color: var(--text-primary); }
+.tab.active, .reference-tab.active { color: var(--accent); font-weight: 700; border-bottom-color: var(--accent); }
+
+.bible-content { padding: 24px; min-height: 380px; line-height: 2; font-size: 15px; color: var(--text-primary); flex: 1; overflow-y: auto; }
+.verse-number { color: var(--accent); font-size: 12px; font-weight: 700; margin-right: 6px; }
+
+.content-editor { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+.content-editor textarea { width: 100%; height: 310px; resize: vertical; line-height: 1.8; }
+
+/* ── Reference Panels ── */
+.reference-content { padding: 20px 24px 24px; }
+.url-row { display: grid; grid-template-columns: 1fr 120px; gap: 10px; }
+.upload-area { border: 2px dashed var(--sand-dark); border-radius: var(--radius-md); min-height: 130px; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--text-muted); cursor: pointer; transition: background var(--transition); }
+.upload-area:hover { background: var(--cream); }
+.upload-icon { font-size: 28px; margin-bottom: 4px; }
+.document-row { display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--sand); padding: 14px 18px; border-radius: var(--radius-md); background: var(--cream); }
+.document-info { display: flex; align-items: center; gap: 12px; }
+.document-icon { font-size: 24px; }
+.map-area { height: 200px; background: linear-gradient(45deg, #f2ece0 25%, transparent 25%), linear-gradient(-45deg, #f2ece0 25%, transparent 25%), var(--cream); background-size: 24px 24px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--sand); border-radius: var(--radius-md); color: var(--text-muted); }
+.map-search { display: grid; grid-template-columns: 1fr 100px; gap: 10px; margin-bottom: 12px; }
+
+/* ── Book Info (Reading) ── */
+.book-info-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; flex: 1; }
+.book-cover-upload { display: flex; gap: 20px; align-items: flex-start; }
+.book-cover-preview { width: 120px; height: 168px; border-radius: var(--radius-sm); border: 1px solid var(--sand); background: linear-gradient(135deg, var(--sand), var(--sand-dark)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-sm); background-size: cover; background-position: center; }
+.book-cover-preview svg { width: 32px; height: 32px; stroke: var(--brown); fill: none; stroke-width: 1.5; }
+.book-cover-actions { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.editor-section { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.editor-section label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+.editor-section textarea { width: 100%; resize: vertical; line-height: 1.8; }
+.editor-section.summary textarea { height: 200px; }
+.editor-section.impression textarea { height: 200px; }
+
+/* ── Buttons ── */
+.bottom-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 13.5px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; transition: all var(--transition); text-decoration: none; }
+.btn-cancel { background: var(--warm-white); color: var(--text-secondary); border-color: var(--sand); }
+.btn-cancel:hover { background: var(--cream-dark); color: var(--text-primary); }
+.btn-save { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(201,125,78,0.25); }
+.btn-save:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(201,125,78,0.25); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn-secondary { background: var(--warm-white); color: var(--text-secondary); border-color: var(--sand); }
+.btn-secondary:hover { background: var(--cream-dark); color: var(--text-primary); }
+.btn-upload { background: var(--cream); color: var(--text-secondary); border-color: var(--sand); padding: 8px 14px; font-size: 12.5px; }
+.btn-upload:hover { background: var(--cream-dark); color: var(--text-primary); }
+.btn-icon-only { width: 32px; height: 32px; padding: 0; border-radius: 6px; border: 1px solid var(--sand); background: var(--warm-white); color: var(--text-secondary); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.btn-icon-only:hover { background: var(--cream-dark); color: var(--text-primary); }
+.btn-icon-only svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ── Table ── */
+.table-responsive { width: 100%; overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+.data-table th { background: var(--cream-dark); color: var(--text-secondary); font-weight: 600; padding: 13px 18px; border-bottom: 1px solid var(--sand); white-space: nowrap; }
+.data-table td { padding: 15px 18px; border-bottom: 1px solid var(--cream-dark); color: var(--text-primary); vertical-align: middle; }
+.data-table tbody tr { transition: background var(--transition); cursor: pointer; }
+.data-table tbody tr:hover { background: rgba(242,236,224,0.4); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+
+/* ── Tag/Badge ── */
+.sermon-tag, .qt-tag, .bible-badge { display: inline-block; padding: 2px 8px; background: var(--cream); border: 1px solid var(--sand-dark); border-radius: 4px; font-size: 12px; color: var(--brown-dark); font-weight: 500; margin-right: 4px; }
+.visibility-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.visibility-badge.public { background: #e8f0fe; color: #1a56c4; }
+.visibility-badge.private { background: #fce8e6; color: #c5221f; }
+.visibility-badge svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ── Book Cover Thumbnail ── */
+.book-cover { width: 40px; height: 56px; border-radius: 4px; object-fit: cover; border: 1px solid var(--sand); box-shadow: var(--shadow-sm); flex-shrink: 0; }
+.book-cover-placeholder { width: 40px; height: 56px; border-radius: 4px; background: linear-gradient(135deg, var(--sand), var(--sand-dark)); border: 1px solid var(--sand-dark); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.book-cover-placeholder svg { width: 18px; height: 18px; stroke: var(--brown); fill: none; stroke-width: 1.5; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .basic-info { grid-template-columns: 1fr 1fr; }
+  .middle { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .filter-bar { flex-direction: column; align-items: stretch; }
+  .filter-group { width: 100%; }
+  .filter-group input, .filter-group select { flex: 1; }
+  .page-header-row { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 680px) {
+  .basic-info { grid-template-columns: 1fr; }
+  .book-cover-upload { flex-direction: column; align-items: center; }
+}
