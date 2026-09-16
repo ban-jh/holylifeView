@@ -112,6 +112,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/css/qt-list.css'
 import { ref, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { qtApi } from '@/api'
@@ -159,7 +160,3 @@ function onPageChange(page: number) {
 
 onMounted(() => { fetchQts() })
 </script>
-
-<style scoped>
-@import './_shared-content.css';
-</style>

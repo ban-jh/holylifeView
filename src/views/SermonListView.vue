@@ -109,6 +109,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/css/sermon-list.css'
 import { ref, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { sermonApi } from '@/api'
@@ -168,7 +169,3 @@ onMounted(() => {
   fetchSermons()
 })
 </script>
-
-<style scoped>
-@import './_shared-content.css';
-</style>

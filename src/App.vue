@@ -5,13 +5,6 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/css/app.css'
 import { RouterView } from 'vue-router'
 </script>
-
-<style scoped>
-#app {
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-</style>

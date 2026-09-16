@@ -59,6 +59,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/css/permission-list.css'
 import { ref, onMounted } from 'vue'
 import { useToast } from '@/composables/useToast'
 
@@ -108,23 +109,3 @@ onMounted(() => {
   fetchRoles()
 })
 </script>
-
-<style scoped>
-.page-header-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; gap: 16px; }
-.page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); }
-.page-desc { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
-.card { background: var(--warm-white); border-radius: var(--radius-lg); border: 1px solid var(--sand); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; }
-.filter-bar { padding: 20px 24px; display: flex; align-items: center; gap: 12px; }
-.filter-group { display: flex; align-items: center; gap: 8px; }
-select { padding: 9px 14px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); background: var(--cream); font-size: 13.5px; color: var(--text-primary); outline: none; }
-select:focus { border-color: var(--accent); }
-.table-responsive { width: 100%; overflow-x: auto; }
-.data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
-.data-table th { background: var(--cream-dark); color: var(--text-secondary); font-weight: 600; padding: 13px 18px; border-bottom: 1px solid var(--sand); white-space: nowrap; }
-.data-table td { padding: 15px 18px; border-bottom: 1px solid var(--cream-dark); color: var(--text-primary); vertical-align: middle; }
-.data-table tbody tr:last-child td { border-bottom: none; }
-input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 13.5px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; transition: all var(--transition); }
-.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn-primary:hover { background: var(--accent-hover); }
-</style>

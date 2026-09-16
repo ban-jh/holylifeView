@@ -91,6 +91,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/css/user-list.css'
 import { ref, onMounted } from 'vue'
 import { userApi } from '@/api'
 import { useToast } from '@/composables/useToast'
@@ -129,59 +130,3 @@ onMounted(() => {
   fetchUsers()
 })
 </script>
-
-<style scoped>
-.page-header-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  gap: 16px;
-}
-.page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); }
-.page-desc { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
-.card {
-  background: var(--warm-white);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--sand);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-.filter-bar { padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-.filter-group { display: flex; align-items: center; gap: 8px; }
-input, select {
-  padding: 9px 14px;
-  border: 1.5px solid var(--sand);
-  border-radius: var(--radius-sm);
-  background: var(--cream);
-  font-size: 13.5px;
-  color: var(--text-primary);
-  outline: none;
-}
-input:focus, select:focus { border-color: var(--accent); }
-.table-responsive { width: 100%; overflow-x: auto; }
-.data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
-.data-table th { background: var(--cream-dark); color: var(--text-secondary); font-weight: 600; padding: 13px 18px; border-bottom: 1px solid var(--sand); white-space: nowrap; }
-.data-table td { padding: 15px 18px; border-bottom: 1px solid var(--cream-dark); color: var(--text-primary); vertical-align: middle; }
-.data-table tbody tr { transition: background var(--transition); cursor: pointer; }
-.data-table tbody tr:hover { background: rgba(242,236,224,0.4); }
-.data-table tbody tr:last-child td { border-bottom: none; }
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13.5px; font-weight: 600;
-  cursor: pointer; border: 1.5px solid transparent; transition: all var(--transition);
-}
-.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn-primary:hover { background: var(--accent-hover); }
-.btn-secondary { background: var(--warm-white); color: var(--text-secondary); border-color: var(--sand); }
-.btn-secondary:hover { background: var(--cream-dark); }
-.btn-icon-only {
-  width: 32px; height: 32px; padding: 0; border-radius: 6px;
-  border: 1px solid var(--sand); background: var(--warm-white); color: var(--text-secondary);
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
-.btn-icon-only:hover { background: var(--cream-dark); }
-.btn-icon-only svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
-@media (max-width: 768px) { .filter-bar { flex-direction: column; align-items: stretch; } .page-header-row { flex-direction: column; align-items: flex-start; } }
-</style>

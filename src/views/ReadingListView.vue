@@ -98,6 +98,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/css/reading-list.css'
 import { ref, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { readingApi } from '@/api'
@@ -127,7 +128,3 @@ function onPageChange(page: number) { currentPage.value = page }
 
 onMounted(() => { fetchReadings() })
 </script>
-
-<style scoped>
-@import './_shared-content.css';
-</style>

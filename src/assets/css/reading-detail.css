@@ -1,0 +1,4 @@
+/* View-specific styles for ReadingDetailView.vue */
+.reading-middle {
+  grid-template-columns: 380px 1fr;
+}

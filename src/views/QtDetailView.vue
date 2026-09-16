@@ -62,6 +62,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/css/qt-detail.css'
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { qtApi } from '@/api'
@@ -123,7 +124,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-@import './_shared-content.css';
-</style>

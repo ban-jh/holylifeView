@@ -69,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/css/reading-detail.css'
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { readingApi } from '@/api'
@@ -126,11 +127,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-@import './_shared-content.css';
-
-.reading-middle {
-  grid-template-columns: 380px 1fr;
-}
-</style>

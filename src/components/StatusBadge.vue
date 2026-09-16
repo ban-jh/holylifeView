@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/css/status-badge.css'
 import { computed } from 'vue'
 
 const props = defineProps<{
@@ -19,29 +20,3 @@ const defaultLabel = computed(() => {
   return labels[props.status] || props.status
 })
 </script>
-
-<style scoped>
-.status-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.status-tag.published {
-  background: #e6f4ea;
-  color: #1e7e34;
-}
-
-.status-tag.draft {
-  background: #fef3d6;
-  color: #b7791f;
-}
-
-.status-tag.archived {
-  background: #f1f3f5;
-  color: #707e94;
-}
-</style>
