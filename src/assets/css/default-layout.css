@@ -55,6 +55,12 @@
   animation: fadeSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
+@media (max-width: 768px) {
+  .content {
+    padding: 24px 20px;
+  }
+}
+
 @media (max-width: 680px) {
   .overlay.active {
     display: block;

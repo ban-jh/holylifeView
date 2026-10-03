@@ -1,10 +1,739 @@
-.page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); }
-.card { background: var(--warm-white); border-radius: var(--radius-lg); border: 1px solid var(--sand); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; }
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13.5px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; transition: all var(--transition); }
-.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn-primary:hover { background: var(--accent-hover); }
-.btn-icon-only { width: 32px; height: 32px; padding: 0; border-radius: 6px; border: 1px solid var(--sand); background: var(--warm-white); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.btn-icon-only:hover { background: var(--cream-dark); }
-@media (max-width: 768px) {
-  .page-header-row { flex-direction: column; align-items: flex-start; }
+/* ── Menu Management — 3개 독립 카드 분리 구조 (common-code 패턴) ── */
+
+/* 외부 컨테이너 — 투명 배경, 보더 없음 (자식 카드들의 그림자가 잘리지 않도록) */
+.menu-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* 헤더 카드 (메뉴 관리 + 버튼들) — 독립 입체 카드 */
+.menu-card-head {
+  padding: 20px 22px;
+  background: var(--warm-white);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.head-actions {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+/* ── Buttons (warm-btn) ── */
+.warm-btn {
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+  padding: 9px 13px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.warm-btn.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.warm-btn.primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.warm-btn.secondary {
+  background: var(--warm-white);
+  color: var(--text-secondary);
+}
+
+.warm-btn.secondary:hover {
+  background: var(--cream-dark);
+}
+
+.warm-btn.small {
+  padding: 8px 10px;
+}
+
+.warm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Split Layout — 투명 배경, gap으로 카드 분리 ── */
+.menu-split {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 16px;
+  min-height: 620px;
+  background: transparent;
+}
+
+/* ── Left: Tree Panel — 독립 입체 카드 ── */
+.menu-tree-panel {
+  padding: 20px;
+  background: var(--warm-white);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* 패널 타이틀 행 (제목 + 카운트 배지) */
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.count-badge {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--cream-dark);
+  color: var(--brown);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.tree-toolbar {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+/* ── Tree ── */
+.warm-tree,
+.warm-tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.warm-tree ul {
+  margin-left: 20px;
+}
+
+.warm-tree-row {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 13px;
+  transition: background var(--transition), color var(--transition);
+  user-select: none;
+}
+
+.warm-tree-row:hover {
+  background: var(--cream-dark);
+  color: var(--text-primary);
+}
+
+.warm-tree-row.selected {
+  background: var(--accent-light);
+  color: var(--brown-dark);
+  font-weight: 700;
+}
+
+.tree-toggle {
+  width: 17px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 10px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.tree-icon {
+  width: 22px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.tree-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.depth {
+  font-size: 9px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ── Right: Detail Panel — 독립 입체 카드 ── */
+.menu-detail-panel {
+  padding: 20px;
+  background: var(--warm-white);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.detail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--sand);
+  gap: 12px;
+}
+
+.depth-chip {
+  background: var(--cream-dark);
+  color: var(--brown);
+  padding: 5px 9px;
+  border-radius: 14px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Menu Form ── */
+.menu-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 20px;
+  padding-top: 20px;
+}
+
+.menu-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.menu-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.menu-field input {
+  height: 40px;
+  border: 1px solid var(--sand-dark);
+  background: var(--warm-white);
+  border-radius: var(--radius-sm);
+  padding: 0 11px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition);
+  box-sizing: border-box;
+}
+
+.menu-field input:focus {
+  border-color: var(--accent);
+}
+
+.menu-field input[readonly] {
+  background: var(--cream);
+  color: var(--text-muted);
+}
+
+/* ── Toggle Switch ── */
+.warm-switch-row {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.warm-switch {
+  width: 42px;
+  height: 24px;
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.warm-switch input {
+  display: none;
+}
+
+.warm-switch span {
+  position: absolute;
+  inset: 0;
+  background: var(--sand-dark);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.warm-switch span:before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform var(--transition);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+.warm-switch input:checked + span {
+  background: var(--accent);
+}
+
+.warm-switch input:checked + span:before {
+  transform: translateX(18px);
+}
+
+/* ── Sub Menu Block ── */
+.sub-menu-block {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--sand);
+}
+
+.sub-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* ── Table (code-table 패턴 참조 — sticky header) ── */
+.warm-table-wrap {
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+  overflow: auto;
+  margin-top: 13px;
+  max-height: 400px;
+}
+
+.warm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.warm-table th {
+  background: var(--cream);
+  color: var(--text-secondary);
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.warm-table th,
+.warm-table td {
+  padding: 11px 9px;
+  border-bottom: 1px solid var(--cream-dark);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.warm-table tbody tr {
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.warm-table tbody tr:hover {
+  background: var(--cream);
+}
+
+/* ── Status Badge ── */
+.menu-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.menu-status.on {
+  background: var(--accent-light);
+  color: var(--brown-dark);
+}
+
+.menu-status.off {
+  background: var(--cream-dark);
+  color: var(--text-muted);
+}
+
+/* ── Empty State ── */
+.menu-empty {
+  text-align: center !important;
+  padding: 28px !important;
+  color: var(--text-muted) !important;
+}
+
+/* ── Actions ── */
+.menu-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--sand);
+}
+
+/* ── Layer Popup ── */
+.layer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 36, 29, 0.42);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.layer-overlay.open {
+  display: flex;
+}
+
+.layer-popup {
+  width: min(460px, 100%);
+  background: var(--warm-white);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-md);
+  box-shadow: 0 18px 50px rgba(50, 38, 27, 0.2);
+  overflow: hidden;
+  animation: menuPopupIn 0.18s ease-out;
+}
+
+@keyframes menuPopupIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.popup-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  border-bottom: 1px solid var(--sand);
+}
+
+.popup-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.popup-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 5px;
+}
+
+.popup-close {
+  border: 0;
+  background: none;
+  font-size: 25px;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.popup-body {
+  padding: 20px;
+}
+
+.popup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 17px;
+}
+
+.popup-field:last-child {
+  margin-bottom: 0;
+}
+
+.popup-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.popup-field label span {
+  color: var(--accent);
+}
+
+.popup-field input {
+  height: 42px;
+  border: 1px solid var(--sand-dark);
+  border-radius: var(--radius-sm);
+  padding: 0 11px;
+  background: var(--warm-white);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color var(--transition);
+}
+
+.popup-field input:focus {
+  border-color: var(--accent);
+}
+
+.popup-field input:disabled {
+  background: var(--cream);
+  color: var(--text-muted);
+}
+
+.popup-selected-parent {
+  padding: 12px;
+  background: var(--cream);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+  margin-bottom: 18px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.popup-selected-parent strong {
+  margin-left: 10px;
+  color: var(--text-primary);
+}
+
+.popup-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--sand);
+}
+
+/* ── Loading ── */
+.menu-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Drag & Drop hint ── */
+.tree-drag-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--sand-dark);
+}
+
+/* ── Drag & Drop visual feedback ── */
+.warm-tree-row.dragging {
+  opacity: 0.4;
+}
+
+.warm-tree > li.drop-before {
+  border-top: 2px solid var(--accent);
+}
+
+.warm-tree > li.drop-after {
+  border-bottom: 2px solid var(--accent);
+}
+
+.warm-tree > li.drop-before > .warm-tree-row,
+.warm-tree > li.drop-after > .warm-tree-row {
+  position: relative;
+}
+
+.warm-tree > li.drop-before > .warm-tree-row::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+.warm-tree > li.drop-after > .warm-tree-row::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+/* ── 2Depth drag visual feedback ── */
+.warm-tree ul > li.drop-before {
+  border-top: 2px solid var(--accent);
+}
+
+.warm-tree ul > li.drop-after {
+  border-bottom: 2px solid var(--accent);
+}
+
+/* When dragging 2Depth over a 1Depth row (move-to-parent indicator) */
+.warm-tree-row.drop-parent {
+  background: var(--accent-light);
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+
+/* ── Sub-menu table drag feedback ── */
+.warm-table tbody tr.dragging {
+  opacity: 0.4;
+}
+
+.warm-table tbody tr.drop-before {
+  border-top: 2px solid var(--accent);
+}
+
+.warm-table tbody tr.drop-after {
+  border-bottom: 2px solid var(--accent);
+}
+
+.menu-tree-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ── Icon Upload ── */
+.icon-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-preview {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--sand);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.icon-remove-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.icon-upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px dashed var(--sand);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-align: center;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.icon-upload-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.icon-uploading-text {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .menu-split { grid-template-columns: 250px minmax(0, 1fr); }
+  .menu-form { grid-template-columns: 1fr; }
+  .sub-menu-head { flex-wrap: wrap; }
+  .sub-menu-head > div { min-width: 0; flex: 1; }
+  .sub-menu-head .warm-btn { flex-shrink: 0; }
+}
+
+@media (max-width: 700px) {
+  .menu-card-head,
+  .detail-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .sub-menu-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .sub-menu-head .warm-btn {
+    width: 100%;
+    white-space: nowrap;
+  }
+  .menu-split {
+    grid-template-columns: 1fr;
+  }
 }

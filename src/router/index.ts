@@ -34,8 +34,13 @@ const router = createRouter({
         { path: 'pbs/:id', name: 'pbsDetail', component: () => import('@/views/PbsDetailView.vue') },
         { path: 'readings', name: 'readingList', component: () => import('@/views/ReadingListView.vue') },
         { path: 'readings/:id', name: 'readingDetail', component: () => import('@/views/ReadingDetailView.vue') },
+        // Placeholder routes (no view component — inline render)
+        { path: 'dashboard', name: 'dashboard', component: { template: '<div class="page-header"><div class="page-title">대시보드</div><div class="page-desc">준비 중입니다.</div></div>' } },
+        { path: 'mypage', name: 'mypage', component: () => import('@/views/MyPageView.vue') },
+        { path: 'notice', name: 'notice', component: { template: '<div class="page-header"><div class="page-title">공지사항</div><div class="page-desc">준비 중입니다.</div></div>' } },
         // System routes
         { path: 'system/users', name: 'systemUsers', component: () => import('@/views/system/UserListView.vue') },
+        { path: 'system/users/new', name: 'userCreate', component: () => import('@/views/system/UserCreateView.vue') },
         { path: 'system/menus', name: 'systemMenus', component: () => import('@/views/system/MenuListView.vue') },
         { path: 'system/permissions', name: 'systemPermissions', component: () => import('@/views/system/PermissionListView.vue') },
         { path: 'system/common-codes', name: 'systemCommonCodes', component: () => import('@/views/system/CommonCodeView.vue') },

@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <!-- 로고 및 헤더 -->
-    <div class="header">
+    <div class="login-header">
       <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2L3 7v10l9 5 9-5V7L12 2z" />
         <path d="M12 22V12" />
@@ -9,6 +9,7 @@
       </svg>
       <h1 class="title">FAITH PATHWAY</h1>
       <p class="subtitle">말씀과 독서로 자라나는 신앙의 길</p>
+      <div class="header-divider"></div>
     </div>
 
     <!-- 로그인 폼 -->

@@ -1,0 +1,213 @@
+/* ── Tiptap Rich Text Editor ── */
+.tiptap-editor {
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+/* 툴바 */
+.tiptap-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--cream);
+  border-bottom: 1px solid var(--sand);
+}
+
+/* 셀렉트 박스 */
+.tiptap-select {
+  height: 30px;
+  border: 1px solid var(--sand);
+  border-radius: 4px;
+  background: var(--warm-white);
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0 6px;
+  outline: none;
+  font-family: inherit;
+}
+
+.tiptap-select:hover {
+  border-color: var(--accent);
+}
+
+.tiptap-select-size {
+  min-width: 65px;
+}
+
+/* 컬러 피커 */
+.tiptap-color-wrap {
+  position: relative;
+  width: 30px;
+  height: 30px;
+}
+
+.tiptap-color-btn {
+  width: 100%;
+  height: 100%;
+  font-size: 14px;
+  color: var(--accent);
+}
+
+.tiptap-color-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* 구분선 */
+.tiptap-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--sand);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.tiptap-btn {
+  min-width: 30px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+
+.tiptap-btn:hover {
+  background: var(--cream-dark);
+  color: var(--text-primary);
+}
+
+.tiptap-btn.active {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* 에디터 본문 */
+.tiptap-content {
+  min-height: 300px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.tiptap-content .tiptap {
+  padding: 16px 18px;
+  min-height: 300px;
+  outline: none;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+.tiptap-content .tiptap:empty::before {
+  content: '내용을 입력하세요.';
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* 에디터 내부 스타일 */
+.tiptap-content .tiptap h1 {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin: 0.8em 0 0.4em;
+}
+
+.tiptap-content .tiptap h2 {
+  font-size: 1.3em;
+  font-weight: 700;
+  margin: 0.8em 0 0.4em;
+}
+
+.tiptap-content .tiptap h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin: 0.6em 0 0.3em;
+}
+
+.tiptap-content .tiptap p {
+  margin: 0.4em 0;
+}
+
+.tiptap-content .tiptap ul,
+.tiptap-content .tiptap ol {
+  padding-left: 1.5em;
+  margin: 0.4em 0;
+}
+
+.tiptap-content .tiptap li {
+  margin: 0.2em 0;
+}
+
+.tiptap-content .tiptap blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 14px;
+  margin: 0.6em 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.tiptap-content .tiptap pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  overflow-x: auto;
+  margin: 0.6em 0;
+}
+
+.tiptap-content .tiptap code {
+  background: var(--cream-dark);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+}
+
+.tiptap-content .tiptap pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.tiptap-content .tiptap a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.tiptap-content .tiptap img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 0.6em 0;
+}
+
+.tiptap-content .tiptap hr {
+  border: none;
+  border-top: 1px solid var(--sand);
+  margin: 1em 0;
+}
+
+.tiptap-content .tiptap[style*="text-align: center"] {
+  text-align: center;
+}
+
+.tiptap-content .tiptap[style*="text-align: right"] {
+  text-align: right;
+}

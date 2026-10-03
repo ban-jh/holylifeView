@@ -2,3 +2,8 @@
 .reading-middle {
   grid-template-columns: 380px 1fr;
 }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .reading-middle { grid-template-columns: 1fr; }
+}

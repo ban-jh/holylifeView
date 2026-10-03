@@ -1,14 +1,536 @@
-.page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); }
-.card { background: var(--warm-white); border-radius: var(--radius-lg); border: 1px solid var(--sand); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; }
-.filter-bar { padding: 20px 24px; display: flex; align-items: center; gap: 12px; }
-select { padding: 9px 14px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); background: var(--cream); font-size: 13.5px; color: var(--text-primary); outline: none; }
-select:focus { border-color: var(--accent); }
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13.5px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; transition: all var(--transition); }
-.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn-primary:hover { background: var(--accent-hover); }
-.btn-secondary:hover { background: var(--cream-dark); }
-.btn-icon-only { width: 32px; height: 32px; padding: 0; border-radius: 6px; border: 1px solid var(--sand); background: var(--warm-white); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.btn-icon-only:hover { background: var(--cream-dark); }
-@media (max-width: 768px) {
-  .page-header-row { flex-direction: column; align-items: flex-start; }
+/* Common Code Management — 3개 독립 카드 분리 구조 */
+
+/* 외부 컨테이너 — 투명 배경, 보더 없음 (자식 카드들의 그림자가 잘리지 않도록) */
+.code-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* 헤더 카드 (공통코드 관리 + 그룹코드 등록 버튼) — 독립 입체 카드 */
+.code-card-head {
+  padding: 20px 22px;
+  background: var(--warm-white);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.head-actions {
+  display: flex;
+  gap: 7px;
+}
+
+.warm-btn {
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+  padding: 9px 13px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.warm-btn.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.warm-btn.primary:hover {
+  background: var(--accent-hover);
+}
+
+.warm-btn.secondary {
+  background: var(--warm-white);
+  color: var(--text-secondary);
+}
+
+.warm-btn.secondary:hover {
+  background: var(--cream-dark);
+}
+
+.warm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Split Layout — 투명 배경, gap으로 카드 분리 */
+/* grid 비율에서 gap 절반(8px)씩 차감 → 헤더 카드와 동일한 전체 넓이 */
+.code-split {
+  display: grid;
+  grid-template-columns: calc(55% - 8px) calc(45% - 8px);
+  gap: 16px;
+  min-height: 600px;
+  background: transparent;
+}
+
+/* 좌측 그룹코드 패널 — 독립 입체 카드 */
+.group-code-panel {
+  padding: 20px;
+  background: var(--warm-white);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 패널 내 Pagination 여백 */
+.group-code-panel .pagination-container {
+  margin-top: 14px;
+}
+
+/* 우측 코드 패널 — 독립 입체 카드 */
+.code-list-panel {
+  padding: 20px;
+  background: var(--warm-white);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.count-badge {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--cream-dark);
+  color: var(--brown);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Search — 테이블과 분리된 영역 */
+.list-toolbar {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: var(--cream);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+}
+
+.list-search {
+  flex: 1;
+}
+
+.list-search input {
+  width: 100%;
+  height: 38px;
+  box-sizing: border-box;
+  border: 1px solid var(--sand-dark);
+  border-radius: var(--radius-sm);
+  padding: 0 11px;
+  background: var(--warm-white);
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.list-search input:focus {
+  border-color: var(--accent);
+}
+
+.list-search input:disabled {
+  background: var(--cream);
+  color: var(--text-muted);
+}
+
+/* Tables */
+/* 그룹코드 테이블 — 페이징 처리 (고정 높이, overflow hidden) */
+.group-table-wrap {
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex: 1;
+}
+
+/* 공통코드 테이블 — 스크롤 처리 (패널 내에서 많은 코드 스크롤) */
+.code-table-scroll {
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+  overflow-y: auto;
+  flex: 1;
+  max-height: 560px;
+}
+
+/* 공통 overflow 처리 (기존 호환) */
+.code-table-wrap {
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+  flex: 1;
+}
+
+.code-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.code-table th {
+  background: var(--cream);
+  color: var(--text-secondary);
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.code-table th,
+.code-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--cream-dark);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.code-table tbody tr {
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.code-table tbody tr:hover {
+  background: var(--cream);
+}
+
+.code-table tbody tr.selected {
+  background: var(--accent-light);
+}
+
+.group-table th:first-child,
+.group-table td:first-child {
+  width: 30%;
+}
+
+.group-table th:nth-child(2),
+.group-table td:nth-child(2) {
+  width: 22%;
+}
+
+.group-table th:nth-child(3),
+.group-table td:nth-child(3) {
+  width: 32%;
+}
+
+.action-col {
+  width: 110px;
+  text-align: center !important;
+}
+
+/* Right Panel — Selected Group */
+.selected-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--sand);
+}
+
+.selected-group-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.selected-group-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.selected-group-code-inline {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 8px;
+  background: var(--cream-dark);
+  color: var(--brown);
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.code-list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin: 18px 0 14px;
+  padding: 12px 14px;
+  background: var(--cream);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+}
+
+.code-list-toolbar .list-search {
+  max-width: 360px;
+}
+
+.code-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.code-count strong {
+  color: var(--brown-dark);
+  font-size: 14px;
+}
+
+/* Actions */
+.code-action {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.table-action {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  transition: all var(--transition);
+}
+
+.table-action:hover {
+  background: var(--cream-dark);
+  color: var(--text-primary);
+}
+
+.table-action.delete:hover {
+  color: #a05243;
+  background: #f7e8e4;
+}
+
+/* Guide */
+.code-guide {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.guide-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sand-dark);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Empty State */
+.code-empty {
+  text-align: center !important;
+  padding: 38px 10px !important;
+  color: var(--text-muted) !important;
+}
+
+/* Layer Popup */
+.layer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 36, 29, 0.42);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.layer-overlay.open {
+  display: flex;
+}
+
+.layer-popup {
+  width: min(460px, 100%);
+  background: var(--warm-white);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-md);
+  box-shadow: 0 18px 50px rgba(50, 38, 27, 0.2);
+  overflow: hidden;
+  animation: popupIn 0.18s ease-out;
+}
+
+@keyframes popupIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.popup-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  border-bottom: 1px solid var(--sand);
+}
+
+.popup-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.popup-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 5px;
+}
+
+.popup-close {
+  border: 0;
+  background: none;
+  font-size: 25px;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.popup-body {
+  padding: 20px;
+}
+
+.popup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 17px;
+}
+
+.popup-field:last-child {
+  margin-bottom: 0;
+}
+
+.popup-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.popup-field label span {
+  color: var(--accent);
+}
+
+.popup-field input {
+  height: 42px;
+  border: 1px solid var(--sand-dark);
+  border-radius: var(--radius-sm);
+  padding: 0 11px;
+  background: var(--warm-white);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.popup-field input:focus {
+  border-color: var(--accent);
+}
+
+.popup-field input:disabled {
+  background: var(--cream);
+  color: var(--text-muted);
+}
+
+.popup-selected-group {
+  padding: 12px;
+  background: var(--cream);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+  margin-bottom: 18px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.popup-selected-group strong {
+  margin-left: 10px;
+  color: var(--text-primary);
+}
+
+.popup-selected-group em {
+  font-style: normal;
+  margin-left: 7px;
+  color: var(--brown);
+}
+
+.popup-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--sand);
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .code-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .code-card-head,
+  .selected-group-head {
+    align-items: flex-start;
+    gap: 12px;
+    flex-direction: column;
+  }
+
+  .code-list-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .code-list-toolbar .list-search {
+    max-width: none;
+    width: 100%;
+  }
 }

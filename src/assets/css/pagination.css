@@ -56,3 +56,10 @@
   fill: none;
   stroke-width: 2;
 }
+
+/* ── Responsive ── */
+@media (max-width: 680px) {
+  .pagination-container { flex-direction: column; gap: 12px; align-items: center; }
+  .pagination { flex-wrap: wrap; justify-content: center; }
+  .pagination-info { font-size: 12px; }
+}
