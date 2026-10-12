@@ -1,2 +1,19 @@
 /* View-specific styles for QtDetailView.vue */
-/* All shared styles are provided by common.css (imported globally in main.ts) */
+
+/* ── 500px 이하: 1단 (세로/가로 공통) ── */
+@media (max-width: 500px) {
+  .middle {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── 501px 이상: 좌우 분할 (말씀 좌 / 내용 우) ── */
+@media (min-width: 501px) {
+  .middle {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px;
+  }
+  .middle-card {
+    min-height: 300px;
+  }
+}

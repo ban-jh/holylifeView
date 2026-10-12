@@ -25,6 +25,14 @@
       <!-- 구분선 -->
       <span class="tiptap-divider"></span>
 
+      <!-- 손글씨 필기 버튼 -->
+      <button class="tiptap-btn tiptap-handwrite-btn" @click="openHandwriting" title="손글씨 필기">
+        ✍️
+      </button>
+
+      <!-- 구분선 -->
+      <span class="tiptap-divider"></span>
+
       <!-- 텍스트 서식 버튼들 -->
       <button
         v-for="btn in toolbarButtons"
@@ -41,6 +49,9 @@
 
     <!-- 에디터 본문 -->
     <EditorContent :editor="editor" class="tiptap-content" />
+
+    <!-- 손글씨 필기 패드 -->
+    <HandwritingPad ref="handwritingPad" @insert="insertHandwriting" />
   </div>
 </template>
 
@@ -54,6 +65,7 @@ import Image from '@tiptap/extension-image'
 import { TextStyle, FontFamily, FontSize, Color } from '@tiptap/extension-text-style'
 import Highlight from '@tiptap/extension-highlight'
 import { watch, onBeforeUnmount, ref } from 'vue'
+import HandwritingPad from '@/components/HandwritingPad.vue'
 
 const props = defineProps<{
   modelValue: string
@@ -116,6 +128,17 @@ watch(
 onBeforeUnmount(() => {
   editor.value?.destroy()
 })
+
+// 손글씨 필기 패드
+const handwritingPad = ref<InstanceType<typeof HandwritingPad> | null>(null)
+
+function openHandwriting() {
+  handwritingPad.value?.open()
+}
+
+function insertHandwriting(dataUrl: string) {
+  editor.value?.chain().focus().setImage({ src: dataUrl }).run()
+}
 
 // 글꼴 변경
 function onFontFamilyChange(e: Event) {

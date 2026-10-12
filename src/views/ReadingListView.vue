@@ -55,10 +55,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="reading in readings" :key="reading.id" @click="goToDetail(reading.id)">
-            <td style="text-align: center; color: var(--text-muted)">{{ reading.no }}</td>
+          <tr v-for="(reading, index) in readings" :key="reading.readingId" @click="goToDetail(reading.readingId)" style="cursor: pointer;">
+            <td style="text-align: center; color: var(--text-muted)">{{ index + 1 }}</td>
             <td style="text-align: center">
-              <img v-if="reading.coverUrl" :src="reading.coverUrl" class="book-cover" alt="표지" />
+              <img v-if="reading.coverImage" :src="reading.coverImage" class="book-cover" alt="표지" />
               <div v-else class="book-cover-placeholder">
                 <svg viewBox="0 0 24 24">
                   <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -66,12 +66,12 @@
                 </svg>
               </div>
             </td>
-            <td>{{ reading.date }}</td>
+            <td>{{ reading.readDate }}</td>
             <td><strong style="color: var(--text-primary)">{{ reading.bookTitle }}</strong></td>
-            <td style="color: var(--text-secondary)">{{ reading.author }}</td>
-            <td style="color: var(--text-secondary)">{{ reading.translator }}</td>
+            <td style="color: var(--text-secondary)">{{ reading.author || '-' }}</td>
+            <td style="color: var(--text-secondary)">{{ reading.translator || '-' }}</td>
             <td style="text-align: center">
-              <button class="btn-icon-only" title="수정" @click.stop="goToDetail(reading.id)">
+              <button class="btn-icon-only" title="수정" @click.stop="goToDetail(reading.readingId)">
                 <svg viewBox="0 0 24 24">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -107,7 +107,7 @@ import Pagination from '@/components/Pagination.vue'
 const router = useRouter()
 
 interface Reading {
-  id: number; no: number; date: string; bookTitle: string; author: string; translator: string; coverUrl?: string
+  readingId: number; readDate: string; bookTitle: string; author: string; translator: string; coverImage?: string
 }
 
 const readings = ref<Reading[]>([])
