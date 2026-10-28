@@ -1,0 +1,9 @@
+# .dockerignore — 프론트엔드
+node_modules/
+dist/
+*.log
+.git/
+.gitignore
+*.md
+Dockerfile
+.dockerignore
