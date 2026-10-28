@@ -468,3 +468,45 @@
     width: 100%;
   }
 }
+
+/* ── Role Group Actions ── */
+.group-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.permission-group.disabled { opacity: 0.55; }
+.permission-group .group-info { flex: 1; min-width: 0; }
+.permission-group .group-info strong { display: flex; align-items: center; gap: 6px; }
+
+.use-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.use-badge.on { background: #e5f3ea; color: #4c8060; }
+.use-badge.off { background: var(--cream-dark); color: var(--text-muted); }
+
+.table-action { border: 1px solid transparent; background: transparent; color: var(--text-muted); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-family: inherit; font-size: 11px; font-weight: 500; transition: all var(--transition); }
+.table-action:hover { background: var(--cream-dark); color: var(--text-primary); }
+.table-action.delete:hover { color: #a05243; background: #f7e8e4; }
+
+/* ── Layer Popup (common-code.css 패턴 참조) ── */
+.layer-overlay { position: fixed; inset: 0; background: rgba(45,36,29,0.42); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+.layer-overlay.open { display: flex; }
+.layer-popup { width: min(460px, 100%); background: var(--warm-white); border: 1px solid var(--sand); border-radius: var(--radius-md); box-shadow: 0 18px 50px rgba(50,38,27,0.2); overflow: hidden; animation: permPopupIn 0.18s ease-out; }
+@keyframes permPopupIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+.popup-head { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px; border-bottom: 1px solid var(--sand); }
+.popup-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+.popup-desc { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+.popup-close { border: 0; background: none; font-size: 25px; line-height: 1; color: var(--text-muted); cursor: pointer; }
+.popup-body { padding: 20px; }
+.popup-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 17px; }
+.popup-field:last-child { margin-bottom: 0; }
+.popup-field label { font-size: 11px; font-weight: 700; color: var(--text-secondary); }
+.popup-field label span { color: var(--accent); }
+.popup-field input { height: 42px; border: 1px solid var(--sand-dark); border-radius: var(--radius-sm); padding: 0 11px; background: var(--warm-white); font-family: inherit; font-size: 13px; color: var(--text-primary); outline: none; box-sizing: border-box; transition: border-color var(--transition); }
+.popup-field input:focus { border-color: var(--accent); }
+.popup-field input:disabled { background: var(--cream); color: var(--text-muted); }
+.popup-footer { display: flex; justify-content: flex-end; gap: 7px; padding: 16px 20px; border-top: 1px solid var(--sand); }
+
+/* ── Toggle Switch ── */
+.warm-switch-row { height: 42px; display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--text-secondary); }
+.warm-switch { width: 42px; height: 24px; position: relative; display: inline-block; flex-shrink: 0; }
+.warm-switch input { display: none; }
+.warm-switch span { position: absolute; inset: 0; background: var(--sand-dark); border-radius: 20px; cursor: pointer; transition: background var(--transition); }
+.warm-switch span:before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform var(--transition); box-shadow: 0 1px 4px rgba(0,0,0,0.18); }
+.warm-switch input:checked + span { background: var(--accent); }
+.warm-switch input:checked + span:before { transform: translateX(18px); }

@@ -120,7 +120,7 @@
                   <td>{{ item.code }}</td>
                   <td>{{ item.codeName }}</td>
                   <td>{{ item.sortOrder }}</td>
-                  <td>{{ item.useYn ? 'O' : 'X' }}</td>
+                  <td><span class="use-badge" :class="item.useYn ? 'on' : 'off'">{{ item.useYn ? '사용' : '미사용' }}</span></td>
                   <td>{{ item.modifiedDate || '-' }}</td>
                   <td class="action-col">
                     <div class="code-action">
@@ -186,7 +186,7 @@
           </div>
           <div class="popup-field">
             <label>코드 <span>*</span></label>
-            <input v-model="codeForm.code" type="text" placeholder="코드를 입력하세요.">
+            <input v-model="codeForm.code" type="text" placeholder="코드를 입력하세요." :disabled="!!editingCode">
           </div>
           <div class="popup-field">
             <label>코드명 <span>*</span></label>
@@ -195,6 +195,16 @@
           <div class="popup-field">
             <label>순서</label>
             <input v-model="codeForm.sortOrder" type="number" placeholder="0">
+          </div>
+          <div class="popup-field">
+            <label>사용여부</label>
+            <div class="warm-switch-row">
+              <label class="warm-switch">
+                <input v-model="codeForm.useYn" type="checkbox">
+                <span></span>
+              </label>
+              <b>{{ codeForm.useYn ? '사용' : '미사용' }}</b>
+            </div>
           </div>
         </div>
         <div class="popup-footer">

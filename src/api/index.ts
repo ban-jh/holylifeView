@@ -8,11 +8,32 @@ const api = axios.create({
   },
 })
 
-// 응답 인터셉터 — 에러 공통 처리
+// 요청 인터셉터 — JWT 토큰 헤더 추가 + 활동 시간 업데이트
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('holylife_token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+    // API 호출 시 활동 시간 업데이트 (1시간 세션 연장)
+    localStorage.setItem('holylife_last_activity', String(Date.now()))
+  }
+  return config
+})
+
+// 응답 인터셉터 — 에러 공통 처리 + 401/403 → 로그인 페이지로 리다이렉트
+// 단, /auth/login 요청은 제외 (로그인 자체는 403이어도 리다이렉트하지 않음)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('API Error:', error.response?.data || error.message)
+    const isLoginRequest = error.config?.url?.includes('/auth/login')
+    if (!isLoginRequest && (error.response?.status === 401 || error.response?.status === 403)) {
+      localStorage.removeItem('holylife_token')
+      localStorage.removeItem('holylife_user')
+      localStorage.removeItem('holylife_menus')
+      localStorage.removeItem('holylife_last_activity')
+      localStorage.removeItem('holylife_last_date')
+      window.location.href = '/login'
+    }
     return Promise.reject(error)
   }
 )

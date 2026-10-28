@@ -43,7 +43,6 @@
             <th>제목</th>
             <th style="width: 150px">본문</th>
             <th style="width: 120px">설교자</th>
-            <th style="width: 70px; text-align: center">관리</th>
           </tr>
         </thead>
         <tbody>
@@ -53,17 +52,9 @@
             <td><strong style="color: var(--text-primary)">{{ sermon.title }}</strong></td>
             <td>{{ sermon.bibleRef || '-' }}</td>
             <td>{{ sermon.preacher }}</td>
-            <td style="text-align: center">
-              <button class="btn-icon-only" title="수정" @click.stop="goToDetail(sermon.sermonId)">
-                <svg viewBox="0 0 24 24">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-              </button>
-            </td>
           </tr>
           <tr v-if="sermons.length === 0">
-            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px">
+            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px">
               {{ loading ? '불러오는 중...' : '등록된 설교가 없습니다.' }}
             </td>
           </tr>

@@ -20,7 +20,7 @@
           </select>
           <select v-model="filterRole" style="min-width: 120px;">
             <option value="">전체 권한</option>
-            <option v-for="code in roleCodes" :key="code.code" :value="code.code">{{ code.codeName }}</option>
+            <option v-for="role in roles" :key="role.roleId" :value="role.groupCode">{{ role.groupName }}</option>
           </select>
         </div>
         <div class="filter-group filter-search-group" style="flex: 1;">
@@ -128,7 +128,7 @@
             <label>권한 그룹 <span>*</span></label>
             <select v-model="userForm.roleGroup" :disabled="popupMode === 'detail' && !editMode">
               <option value="" disabled>선택하세요</option>
-              <option v-for="code in roleCodes" :key="code.code" :value="code.code">{{ code.codeName }}</option>
+              <option v-for="role in roles" :key="role.roleId" :value="role.groupCode">{{ role.groupName }}</option>
             </select>
           </div>
           <div class="popup-field">
@@ -153,7 +153,7 @@
 import '@/assets/css/user-list.css'
 import '@/assets/css/menu-list.css'
 import { ref, reactive, onMounted } from 'vue'
-import { userApi, commonCodeApi } from '@/api'
+import { userApi, roleApi, commonCodeApi } from '@/api'
 import { useToast } from '@/composables/useToast'
 import StatusBadge from '@/components/StatusBadge.vue'
 import Pagination from '@/components/Pagination.vue'
@@ -169,13 +169,13 @@ const currentPage = ref(1)
 const totalItems = ref(0)
 const itemsPerPage = ref(10)
 
-// 공통코드 (권한 그룹, 계정 상태)
-const roleCodes = ref<any[]>([])
+// 권한 그룹 (roles 테이블), 계정 상태 (common_codes)
+const roles = ref<any[]>([])
 const statusCodes = ref<any[]>([])
 
 function getRoleName(code: string): string {
-  const found = roleCodes.value.find((c) => c.code === code)
-  return found ? found.codeName : code || '-'
+  const found = roles.value.find((r) => r.groupCode === code)
+  return found ? found.groupName : code || '-'
 }
 
 function getStatusName(code: string): string {
@@ -227,7 +227,7 @@ function openDetailPopup(user: any) {
   userForm.email = user.email || ''
   userForm.nickname = user.nickname || ''
   userForm.phone = user.phone || ''
-  userForm.roleGroup = user.roleGroup || (roleCodes.value.length > 0 ? roleCodes.value[0].code : '')
+  userForm.roleGroup = user.roleGroup || (roles.value.length > 0 ? roles.value[0].groupCode : '')
   userForm.accountStatus = user.accountStatus || (statusCodes.value.length > 0 ? statusCodes.value[0].code : '')
   userForm.password = ''
   userForm.passwordCheck = ''
@@ -349,16 +349,16 @@ async function deleteUser() {
 }
 
 onMounted(async () => {
-  // 공통코드 먼저 로드
+  // 권한 그룹 (roles 테이블)과 계정 상태 (common_codes) 로드
   try {
     const [roleRes, statusRes] = await Promise.all([
-      commonCodeApi.getAll('user_role'),
+      roleApi.getAll(),
       commonCodeApi.getAll('user_status'),
     ])
-    roleCodes.value = roleRes.data || []
+    roles.value = (roleRes.data || []).filter((r: any) => r.useYn)
     statusCodes.value = statusRes.data || []
   } catch (e) {
-    console.error('공통코드 로드 실패', e)
+    console.error('데이터 로드 실패', e)
   }
   // 사용자 목록 로드
   fetchUsers()

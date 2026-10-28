@@ -95,11 +95,8 @@
           <div class="form-field">
             <label>권한 그룹</label>
             <select v-model="form.roleGroup" class="role-select">
-              <option value="USER">USER</option>
-              <option value="VIEWER">VIEWER</option>
-              <option value="EDITOR">EDITOR</option>
-              <option value="ADMIN">ADMIN</option>
-              <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+              <option value="" disabled>선택하세요</option>
+              <option v-for="role in roles" :key="role.roleId" :value="role.groupCode">{{ role.groupName }}</option>
             </select>
           </div>
 
@@ -127,12 +124,10 @@
 
 <script setup lang="ts">
 import '@/assets/css/user-create.css'
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { userApi } from '@/api'
+import { userApi, roleApi } from '@/api'
 import { useToast } from '@/composables/useToast'
-
-type RoleGroup = 'SUPER_ADMIN' | 'ADMIN' | 'EDITOR' | 'VIEWER' | 'USER'
 
 interface UserCreateForm {
   email: string
@@ -140,7 +135,7 @@ interface UserCreateForm {
   name: string
   nickname: string
   phone: string
-  roleGroup: RoleGroup
+  roleGroup: string
   memo: string
 }
 
@@ -161,9 +156,11 @@ const form = reactive<UserCreateForm>({
   name: '',
   nickname: '',
   phone: '',
-  roleGroup: 'USER',
+  roleGroup: '',
   memo: '',
 })
+
+const roles = ref<any[]>([])
 
 const passwordConfirm = ref('')
 const errors = reactive<FormErrors>({})
@@ -283,4 +280,13 @@ function extractErrorMessage(err: unknown): string {
 function goBack() {
   router.push('/system/users')
 }
+
+onMounted(async () => {
+  try {
+    const res = await roleApi.getAll()
+    roles.value = (res.data || []).filter((r: any) => r.useYn)
+  } catch (e) {
+    console.error('권한 그룹 로드 실패', e)
+  }
+})
 </script>

@@ -1,2 +1,21 @@
 /* View-specific styles for PbsDetailView.vue */
 /* All shared styles are provided by common.css (imported globally in main.ts) */
+
+/* Google Maps 지도 영역 */
+.map-area {
+  height: 400px;
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--cream);
+}
+
+.map-error {
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: #fff3f0;
+  border: 1px solid #f5c6c1;
+  border-radius: var(--radius-sm);
+  color: #c0392b;
+  font-size: 12px;
+}

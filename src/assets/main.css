@@ -24,6 +24,8 @@
   --shadow-md: 0 4px 16px rgba(100,70,40,0.10);
   --shadow-lg: 0 8px 32px rgba(100,70,40,0.13);
   --transition: 0.22s cubic-bezier(.4,0,.2,1);
+  --green: #3a8c5f;
+  --blue: #3a6f8c;
 }
 
 * {

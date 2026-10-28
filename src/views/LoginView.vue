@@ -54,17 +54,23 @@
 import '@/assets/css/login.css'
 import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
+const { login } = useAuth()
 const email = ref('')
 const password = ref('')
 const showModal = ref(false)
 
-function handleLogin() {
-  // TODO: 실제 로그인 API 호출
-  if (email.value && password.value) {
-    router.push('/sermons')
-  } else {
+async function handleLogin() {
+  if (!email.value || !password.value) {
+    showModal.value = true
+    return
+  }
+  try {
+    await login(email.value, password.value)
+    router.push('/dashboard')
+  } catch (e: any) {
     showModal.value = true
   }
 }

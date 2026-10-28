@@ -12,6 +12,7 @@
           <div class="section-desc">왼쪽 권한 그룹을 선택한 후 오른쪽 메뉴에서 접근 권한을 선택하세요.</div>
         </div>
         <div class="head-actions">
+          <button class="warm-btn primary" @click="openRolePopup">+ 권한 그룹 등록</button>
           <button class="warm-btn secondary" @click="checkAll">전체 선택</button>
           <button class="warm-btn secondary" @click="uncheckAll">전체 해제</button>
         </div>
@@ -37,13 +38,17 @@
               v-for="role in filteredRoles"
               :key="role.roleId"
               class="permission-group"
-              :class="{ selected: selectedRoleId === role.roleId }"
+              :class="{ selected: selectedRoleId === role.roleId, disabled: !role.useYn }"
               @click="selectRole(role)"
             >
               <div class="group-icon">{{ role.groupName.charAt(0) }}</div>
               <div class="group-info">
-                <strong>{{ role.groupName }}</strong>
+                <strong>{{ role.groupName }} <span v-if="!role.useYn" class="use-badge off">미사용</span></strong>
                 <span>{{ role.groupDesc || role.groupCode }}</span>
+              </div>
+              <div class="group-actions">
+                <button class="table-action" title="수정" @click.stop="editRole(role)">수정</button>
+                <button class="table-action delete" title="삭제" @click.stop="deleteRole(role)">삭제</button>
               </div>
             </div>
             <div v-if="filteredRoles.length === 0" class="group-empty">검색 결과가 없습니다.</div>
@@ -126,12 +131,53 @@
         </section>
       </div>
     </div>
+
+    <!-- Role Group Layer Popup -->
+    <div class="layer-overlay" :class="{ open: showRolePopup }" @click.self="closeRolePopup">
+      <div class="layer-popup">
+        <div class="popup-head">
+          <div>
+            <div class="popup-title">{{ editingRole ? '권한 그룹 수정' : '권한 그룹 등록' }}</div>
+            <div class="popup-desc">권한 그룹명과 코드를 입력하세요.</div>
+          </div>
+          <button class="popup-close" @click="closeRolePopup">×</button>
+        </div>
+        <div class="popup-body">
+          <div class="popup-field">
+            <label>그룹명 <span>*</span></label>
+            <input v-model="roleForm.groupName" type="text" placeholder="권한 그룹명을 입력하세요.">
+          </div>
+          <div class="popup-field">
+            <label>그룹 코드 <span>*</span></label>
+            <input v-model="roleForm.groupCode" type="text" placeholder="권한 그룹 코드를 입력하세요." :disabled="!!editingRole">
+          </div>
+          <div class="popup-field">
+            <label>설명</label>
+            <input v-model="roleForm.groupDesc" type="text" placeholder="권한 그룹 설명을 입력하세요.">
+          </div>
+          <div class="popup-field">
+            <label>사용여부</label>
+            <div class="warm-switch-row">
+              <label class="warm-switch">
+                <input v-model="roleForm.useYn" type="checkbox">
+                <span></span>
+              </label>
+              <b>{{ roleForm.useYn ? '사용' : '미사용' }}</b>
+            </div>
+          </div>
+        </div>
+        <div class="popup-footer">
+          <button class="warm-btn secondary" @click="closeRolePopup">취소</button>
+          <button class="warm-btn primary" @click="saveRolePopup">{{ editingRole ? '수정' : '등록' }}</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import '@/assets/css/permission-list.css'
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { permissionApi, roleApi } from '@/api'
 import { useToast } from '@/composables/useToast'
 
@@ -163,11 +209,85 @@ const onlyChecked = ref(false)
 
 const filteredRoles = computed(() => {
   const q = groupSearch.value.toLowerCase().trim()
-  if (!q) return roles.value
-  return roles.value.filter((r) =>
-    r.groupName.toLowerCase().includes(q) || r.groupCode.toLowerCase().includes(q)
-  )
+  let list = roles.value
+  if (q) {
+    list = list.filter((r) =>
+      r.groupName.toLowerCase().includes(q) || r.groupCode.toLowerCase().includes(q)
+    )
+  }
+  return list
 })
+
+// ── Role Group Popup ──
+const showRolePopup = ref(false)
+const editingRole = ref<any>(null)
+const roleForm = reactive({ groupCode: '', groupName: '', groupDesc: '', useYn: true })
+
+function openRolePopup() {
+  editingRole.value = null
+  roleForm.groupCode = ''
+  roleForm.groupName = ''
+  roleForm.groupDesc = ''
+  roleForm.useYn = true
+  showRolePopup.value = true
+}
+
+function editRole(role: any) {
+  editingRole.value = role
+  roleForm.groupCode = role.groupCode
+  roleForm.groupName = role.groupName
+  roleForm.groupDesc = role.groupDesc || ''
+  roleForm.useYn = role.useYn !== false
+  showRolePopup.value = true
+}
+
+function closeRolePopup() {
+  showRolePopup.value = false
+}
+
+async function saveRolePopup() {
+  if (!roleForm.groupName || !roleForm.groupCode) {
+    showToast('그룹명과 그룹 코드를 입력해주세요.')
+    return
+  }
+  try {
+    if (editingRole.value) {
+      await roleApi.update(editingRole.value.roleId, roleForm)
+      showToast('권한 그룹이 수정되었습니다.')
+    } else {
+      await roleApi.create(roleForm)
+      showToast('권한 그룹이 등록되었습니다.')
+    }
+    closeRolePopup()
+    await fetchRoles()
+  } catch (e: any) {
+    showToast(e.response?.data?.message || '저장에 실패했습니다.')
+  }
+}
+
+async function deleteRole(role: any) {
+  if (!confirm(`권한 그룹 "${role.groupName}"을(를) 삭제하시겠습니까?`)) return
+  try {
+    await roleApi.delete(role.roleId)
+    showToast('권한 그룹이 삭제되었습니다.')
+    if (selectedRoleId.value === role.roleId) {
+      selectedRoleId.value = null
+      menuTree.value = []
+    }
+    await fetchRoles()
+  } catch (e: any) {
+    showToast(e.response?.data?.message || '삭제에 실패했습니다.')
+  }
+}
+
+async function fetchRoles() {
+  try {
+    const res = await roleApi.getAll()
+    roles.value = res.data || []
+  } catch (e) {
+    showToast('권한 그룹을 불러오지 못했습니다.')
+  }
+}
 
 // 트리를 평면화 + 검색 필터 적용
 const flatMenuList = computed(() => {
@@ -300,11 +420,6 @@ async function savePermissions() {
 }
 
 onMounted(async () => {
-  try {
-    const res = await roleApi.getAll()
-    roles.value = (res.data || []).filter((r: any) => r.useYn)
-  } catch (e) {
-    showToast('권한 그룹을 불러오지 못했습니다.')
-  }
+  await fetchRoles()
 })
 </script>

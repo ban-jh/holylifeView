@@ -25,7 +25,7 @@ const router = createRouter({
       path: '/',
       component: DefaultLayout,
       children: [
-        { path: '', redirect: '/sermons' },
+        { path: '', redirect: '/dashboard' },
         { path: 'sermons', name: 'sermonList', component: () => import('@/views/SermonListView.vue') },
         { path: 'sermons/:id', name: 'sermonDetail', component: () => import('@/views/SermonDetailView.vue') },
         { path: 'qts', name: 'qtList', component: () => import('@/views/QtListView.vue') },
@@ -35,7 +35,7 @@ const router = createRouter({
         { path: 'readings', name: 'readingList', component: () => import('@/views/ReadingListView.vue') },
         { path: 'readings/:id', name: 'readingDetail', component: () => import('@/views/ReadingDetailView.vue') },
         // Placeholder routes (no view component — inline render)
-        { path: 'dashboard', name: 'dashboard', component: { template: '<div class="page-header"><div class="page-title">대시보드</div><div class="page-desc">준비 중입니다.</div></div>' } },
+        { path: 'dashboard', name: 'dashboard', component: () => import('@/views/DashboardView.vue') },
         { path: 'mypage', name: 'mypage', component: () => import('@/views/MyPageView.vue') },
         { path: 'notice', name: 'notice', component: { template: '<div class="page-header"><div class="page-title">공지사항</div><div class="page-desc">준비 중입니다.</div></div>' } },
         // System routes
@@ -47,6 +47,32 @@ const router = createRouter({
       ],
     },
   ],
+})
+
+import { useAuth } from '@/composables/useAuth'
+
+router.beforeEach((to, from, next) => {
+  const { isSessionValid, isMenuAllowed } = useAuth()
+
+  // Public routes: /login, /signup
+  if (to.path === '/login' || to.path === '/signup') {
+    next()
+    return
+  }
+
+  // 세션 만료 확인 (1시간 초과 시 자동 로그아웃)
+  if (!isSessionValid()) {
+    next('/login')
+    return
+  }
+
+  // Logged in but no menu permission → redirect to dashboard
+  if (!isMenuAllowed(to.path)) {
+    next('/dashboard')
+    return
+  }
+
+  next()
 })
 
 export default router

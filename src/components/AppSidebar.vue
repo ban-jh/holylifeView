@@ -1,7 +1,7 @@
 <template>
   <aside class="sidebar" :class="{ open, collapsed }">
     <!-- Logo -->
-    <div class="sidebar-logo">
+    <div class="sidebar-logo" @click="goDashboard" style="cursor: pointer;">
       <div class="sidebar-logo-icon">
         <svg viewBox="0 0 24 24">
           <path d="M12 2L3 7v10l9 5 9-5V7L12 2z" />
@@ -134,10 +134,10 @@
     <!-- User Footer -->
     <div class="sidebar-footer">
       <div class="sidebar-user">
-        <div class="sidebar-user-avatar">박</div>
-        <div class="sidebar-user-info">
-          <div class="sidebar-user-name">박성민 관리자</div>
-          <div class="sidebar-user-role">Super Admin</div>
+        <div class="sidebar-user-avatar">{{ userInitial }}</div>
+        <div class="sidebar-user-info" v-if="!collapsed">
+          <div class="sidebar-user-name">{{ userDisplayName }}</div>
+          <div class="sidebar-user-role">{{ userRoleLabel }}</div>
         </div>
       </div>
     </div>
@@ -149,6 +149,7 @@ import '@/assets/css/app-sidebar.css'
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { menuApi, qtApi } from '@/api'
+import { useAuth } from '@/composables/useAuth'
 
 defineProps<{
   open?: boolean
@@ -162,6 +163,21 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const router = useRouter()
+const { user, allowedMenus, isMenuAllowed, fetchAllowedMenus } = useAuth()
+
+// User display info from auth state
+const userDisplayName = computed(() => {
+  const u = user.value
+  return u ? (u.nickname || u.name || u.email || '사용자') : '사용자'
+})
+const userRoleLabel = computed(() => {
+  const u = user.value
+  return u?.roleGroup || '게스트'
+})
+const userInitial = computed(() => {
+  const name = userDisplayName.value
+  return name ? name.charAt(0).toUpperCase() : '?'
+})
 
 interface MenuItem {
   menuId: number
@@ -203,6 +219,11 @@ function close() {
   emit('close')
 }
 
+function goDashboard() {
+  router.push('/dashboard')
+  emit('close')
+}
+
 // QT 메뉴 클릭 시 — 오늘 QT가 있으면 목록, 없으면 등록화면
 async function handleQtClick() {
   try {
@@ -221,8 +242,15 @@ async function handleQtClick() {
 }
 
 // Split menus into sections: non-system → '메인 메뉴', system → '관리'
+// Also filter by allowedMenus (permission-based) — only show menus the user has canRead for
 const menuSections = computed(() => {
-  const filtered = menus.value.filter((m) => m.useYn && m.displayYn)
+  const filtered = menus.value
+    .filter((m) => m.useYn && m.displayYn)
+    .filter((m) => isMenuAllowed(m.menuUrl) || (m.children && m.children.some((c) => isMenuAllowed(c.menuUrl))))
+    .map((m) => ({
+      ...m,
+      children: m.children?.filter((c) => c.useYn && c.displayYn && isMenuAllowed(c.menuUrl)),
+    }))
   const mainItems = filtered.filter((m) => m.menuCode !== 'SYSTEM')
   const systemItems = filtered.filter((m) => m.menuCode === 'SYSTEM')
   const sections: { label: string; items: MenuItem[] }[] = []

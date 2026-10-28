@@ -87,6 +87,7 @@
         <div class="tabs">
           <button class="tab" :class="{ active: bibleTab === 'gae' }" @click="changeBibleTab('gae')">개역개정</button>
           <button class="tab" :class="{ active: bibleTab === 'sae' }" @click="changeBibleTab('sae')">새번역</button>
+          <button class="tab" :class="{ active: bibleTab === 'niv' }" @click="changeBibleTab('niv')">NIV</button>
         </div>
       </div>
       <div class="bible-content">
@@ -124,7 +125,7 @@ const router = useRouter()
 const route = useRoute()
 const { showToast } = useToast()
 
-const bibleTab = ref<'gae' | 'sae'>('gae')
+const bibleTab = ref<'gae' | 'sae' | 'niv'>('gae')
 const tagInput = ref('')
 const bibleLoading = ref(false)
 
@@ -133,7 +134,7 @@ const preacherOptions = ref<{ code: string; name: string }[]>([])
 const directInput = ref(false)
 
 // 두 버전의 성경 구절을 모두 캐싱 — 탭 전환 시 즉시 표시
-const bibleCache = ref<{ gae: any[]; sae: any[] }>({ gae: [], sae: [] })
+const bibleCache = ref<{ gae: any[]; sae: any[]; niv: any[] }>({ gae: [], sae: [], niv: [] })
 
 // 성경 책 목록 — DB에서 가져옴 (book_code + book_name_kr)
 interface BookInfo {
@@ -268,7 +269,7 @@ const bibleTextHtml = computed(() => {
 // 성경 구절 조회 — 두 버전을 동시에 조회하여 캐싱
 async function fetchBibleText() {
   if (!form.bibleBook || !form.chapterFrom) {
-    bibleCache.value = { gae: [], sae: [] }
+    bibleCache.value = { gae: [], sae: [], niv: [] }
     return
   }
 
@@ -278,25 +279,27 @@ async function fetchBibleText() {
 
   bibleLoading.value = true
   try {
-    // 두 버전을 병렬로 조회
-    const [gaeRes, saeRes] = await Promise.all([
+    // 세 버전을 병렬로 조회 (개역개정=2, 새번역=3, NIV=6)
+    const [gaeRes, saeRes, nivRes] = await Promise.all([
       bibleApi.getVerses(form.bibleBook, chapter, verseFrom, verseTo, 2),
       bibleApi.getVerses(form.bibleBook, chapter, verseFrom, verseTo, 3),
+      bibleApi.getVerses(form.bibleBook, chapter, verseFrom, verseTo, 6),
     ])
     bibleCache.value = {
       gae: gaeRes.data || [],
       sae: saeRes.data || [],
+      niv: nivRes.data || [],
     }
   } catch (e: any) {
     console.error('성경 조회 실패:', e)
-    bibleCache.value = { gae: [], sae: [] }
+    bibleCache.value = { gae: [], sae: [], niv: [] }
   } finally {
     bibleLoading.value = false
   }
 }
 
 // 탭 전환 — 캐시에서 즉시 표시 (재조회 없음)
-function changeBibleTab(tab: 'gae' | 'sae') {
+function changeBibleTab(tab: 'gae' | 'sae' | 'niv') {
   bibleTab.value = tab
 }
 
