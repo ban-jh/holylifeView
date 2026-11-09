@@ -156,8 +156,8 @@ export const fileApi = {
 
 // Bible API
 export const bibleApi = {
-  getVerses: (bookCode: string, chapter: number, verseFrom?: number, verseTo?: number, versionId?: number) =>
-    api.get('/bible/verses', { params: { bookCode, chapter, verseFrom, verseTo, versionId } }),
+  getVerses: (bookCode: string, chapterFrom: number, verseFrom?: number, chapterTo?: number, verseTo?: number, versionId?: number) =>
+    api.get('/bible/verses', { params: { bookCode, chapterFrom, verseFrom, chapterTo, verseTo, versionId } }),
   getBooks: (versionId?: number) => api.get('/bible/books', { params: { versionId } }),
 }
 

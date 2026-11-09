@@ -273,17 +273,19 @@ async function fetchBibleText() {
     return
   }
 
-  const chapter = Number(form.chapterFrom)
+  const chapterFrom = Number(form.chapterFrom)
   const verseFrom = form.verseFrom ? Number(form.verseFrom) : undefined
+  // chapterTo 미지정 시 chapterFrom과 동일 (단일 장)
+  const chapterTo = form.chapterTo ? Number(form.chapterTo) : undefined
   const verseTo = form.verseTo ? Number(form.verseTo) : undefined
 
   bibleLoading.value = true
   try {
     // 세 버전을 병렬로 조회 (개역개정=2, 새번역=3, NIV=6)
     const [gaeRes, saeRes, nivRes] = await Promise.all([
-      bibleApi.getVerses(form.bibleBook, chapter, verseFrom, verseTo, 2),
-      bibleApi.getVerses(form.bibleBook, chapter, verseFrom, verseTo, 3),
-      bibleApi.getVerses(form.bibleBook, chapter, verseFrom, verseTo, 6),
+      bibleApi.getVerses(form.bibleBook, chapterFrom, verseFrom, chapterTo, verseTo, 2),
+      bibleApi.getVerses(form.bibleBook, chapterFrom, verseFrom, chapterTo, verseTo, 3),
+      bibleApi.getVerses(form.bibleBook, chapterFrom, verseFrom, chapterTo, verseTo, 6),
     ])
     bibleCache.value = {
       gae: gaeRes.data || [],
