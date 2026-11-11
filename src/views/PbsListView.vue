@@ -597,6 +597,10 @@ async function selectPage(pageId: number, folderId?: number) {
     activeSectionId.value = sections.value.length > 0 ? sections.value[0].sectionId : null
     // Populate bible selectors from page data
     const p = res.data
+    // 페이지 전환 시 성경 영역 초기화 (이전 페이지 본문/목록 잔상 방지)
+    bibleCache.value = { gae: [], sae: [], niv: [] }
+    verseList.value = []
+    verseListTo.value = []
     bible.testament = p.testament || ''
     bible.bookCode = p.bookCode || ''
     bible.chapterFrom = p.chapterFrom || ''
@@ -640,13 +644,27 @@ async function handleCreatePage() {
   try {
     const res = await pbsApi.createPage({ folderId: targetFolderId })
     showToast('새 페이지가 생성되었습니다.')
+    // 새 페이지: 성경 말씀 영역 초기화
+    bible.testament = ''
+    bible.bookCode = ''
+    bible.chapterFrom = ''
+    bible.verseFrom = ''
+    bible.chapterTo = ''
+    bible.verseTo = ''
+    verseList.value = []
+    verseListTo.value = []
+    bibleCache.value = { gae: [], sae: [], niv: [] }
+    bibleTab.value = 'sae'
     await fetchFolders()
     // Expand the folder
     expandedFolders.value.add(targetFolderId)
     // Select the new page
     const newPageId = res.data.pageId || res.data.pageId
     if (newPageId) {
-      await selectPage(newPageId)
+      // 새 페이지는 무조건 새로 로드 (캐시된 이전 페이지 재사용 방지)
+      selectedPageId.value = null
+      currentPage.value = null
+      await selectPage(newPageId, targetFolderId)
     }
   } catch (e) {
     console.error('페이지 생성 실패:', e)
