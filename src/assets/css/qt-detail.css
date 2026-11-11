@@ -1,19 +1,51 @@
 /* View-specific styles for QtDetailView.vue */
 
-/* ── 500px 이하: 1단 (세로/가로 공통) ── */
-@media (max-width: 500px) {
-  .middle {
-    grid-template-columns: 1fr !important;
-  }
+/* ── 기본 정보 (제목 / 날짜) : PC 1줄 ── */
+.basic-info-qt {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
 }
 
-/* ── 501px 이상: 좌우 분할 (말씀 좌 / 내용 우) ── */
-@media (min-width: 501px) {
+/* 성경 구절 영역 : 항상 한 줄 전체 */
+.basic-info-qt-full {
+  display: block;
+}
+.basic-info-qt-full .form-bible {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ── 말씀 / 내용 분할 ── */
+/* PC·태블릿: 좌우 2단 */
+@media (min-width: 768px) {
   .middle {
     grid-template-columns: 1fr 1fr !important;
     gap: 20px;
   }
   .middle-card {
     min-height: 300px;
+  }
+}
+
+/* 태블릿: 제목/날짜 1:1 두 칸 유지, 간격 축소 */
+@media (max-width: 1023px) {
+  .basic-info-qt {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+/* 모바일: 1열 세로 배치, 말씀/내용도 세로 */
+@media (max-width: 767px) {
+  .basic-info-qt {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .middle {
+    grid-template-columns: 1fr !important;
+  }
+  .middle-card {
+    min-height: 220px;
   }
 }

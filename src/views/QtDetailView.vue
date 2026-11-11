@@ -8,13 +8,13 @@
   <section class="card">
     <div class="card-header"><div class="card-title">기본 정보</div></div>
     <div class="card-body">
-      <div class="basic-info">
+      <div class="basic-info-qt">
         <div class="form-group"><label>제목</label><input type="text" v-model="form.title" placeholder="QT 제목을 입력하세요" /></div>
         <div class="form-group"><label>날짜</label><input type="date" v-model="form.date" /></div>
       </div>
 
       <!-- 성경 구절 선택 — 항상 표시, 직접 입력 모드만 수정 가능 -->
-      <div class="basic-info" style="margin-top: 20px;">
+      <div class="basic-info-qt-full" style="margin-top: 20px;">
         <div class="form-group form-bible">
           <label>성경 구절</label>
           <div class="bible-select-row">
