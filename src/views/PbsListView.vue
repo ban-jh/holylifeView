@@ -176,26 +176,27 @@
           <div style="font-size: 11px">트리에서 페이지를 클릭하거나 + 버튼으로 새 페이지를 만들 수 있습니다.</div>
         </div>
         <div v-else class="pbs-content-body">
-          <!-- Page Title (card 내부) -->
-          <section class="card pbs-title-card">
-            <div class="card-header">
+          <!-- 제목 + 내용 통합 카드 -->
+          <section class="card pbs-page-card">
+            <!-- 카드 헤더: 메타 + 배포 -->
+            <div class="card-header pbs-page-card-header">
               <div class="pbs-page-meta-row">
                 <span class="pbs-page-meta-tag">성경공부</span>
                 <span class="pbs-page-status-tag" :class="{ published: currentPage.status === 'PUBLISHED', saving: saveStatus === 'saving' }">
                   {{ statusLabel }}
                 </span>
-                <div style="margin-left: auto; display: flex; gap: 8px;">
-                  <button
-                    class="pbs-btn-publish"
-                    @click="handlePublish"
-                    :disabled="currentPage.status === 'PUBLISHED'"
-                  >
-                    {{ currentPage.status === 'PUBLISHED' ? '배포됨' : '배포' }}
-                  </button>
-                </div>
               </div>
+              <button
+                class="pbs-btn-publish"
+                @click="handlePublish"
+                :disabled="currentPage.status === 'PUBLISHED'"
+              >
+                {{ currentPage.status === 'PUBLISHED' ? '배포됨' : '배포' }}
+              </button>
             </div>
-            <div class="card-body">
+
+            <!-- 제목 -->
+            <div class="card-body pbs-title-body">
               <input
                 class="pbs-page-title-edit"
                 type="text"
@@ -204,11 +205,9 @@
                 @input="onTitleInput"
               >
             </div>
-          </section>
 
-          <!-- 영역별 페이징 (섹션 탭 + RichTextEditor) -->
-          <section class="card pbs-section-card">
-            <div class="card-header pbs-section-header">
+            <!-- 영역별 탭 -->
+            <div class="pbs-section-header">
               <div class="card-title">영역별 내용</div>
               <div class="pbs-section-tabs-wrap">
                 <!-- 섹션이 2개 이상이면 탭 표시 -->
@@ -240,7 +239,9 @@
                 </button>
               </div>
             </div>
-            <div class="card-body pbs-section-card-body">
+
+            <!-- 영역 내용 -->
+            <div class="pbs-section-card-body">
               <!-- 섹션이 없을 때 -->
               <div v-if="sections.length === 0" class="pbs-section-empty">
                 영역이 없습니다. + 버튼으로 새 영역을 추가하세요.

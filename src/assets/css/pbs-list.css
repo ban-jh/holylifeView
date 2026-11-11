@@ -41,6 +41,9 @@
 .pbs-panel-content {
   background: transparent;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--sand) transparent;
 }
@@ -218,8 +221,6 @@
 .pbs-tree-sub-item-wrapper:hover { background: var(--cream-dark); }
 .pbs-tree-sub-item-wrapper.dragging { opacity: 0.5; }
 .pbs-tree-sub-item-wrapper.drag-over { border-top: 2px solid var(--accent); }
-.pbs-tree-sub-item-wrapper:has(.pbs-tree-sub-item.active) { background: var(--accent-light); }
-.pbs-tree-sub-item-wrapper:has(.pbs-tree-sub-item.active):hover { background: var(--accent-light); }
 .pbs-tree-sub-item {
   flex: 1;
   display: flex; align-items: center; gap: 7px;
@@ -227,13 +228,14 @@
   min-width: 0; overflow: hidden;
   color: var(--text-muted); cursor: pointer;
   font-size: 12px; font-weight: 400;
-  transition: background var(--transition), color var(--transition);
+  transition: background var(--transition);
   user-select: none;
 }
 .pbs-tree-sub-item span {
   flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.pbs-tree-sub-item.active { color: var(--accent-hover); font-weight: 600; }
+.pbs-tree-sub-item.active,
+.pbs-tree-sub-item.active span { color: var(--accent); font-weight: 700; }
 
 .pbs-tree-delete-btn {
   display: none;
@@ -332,7 +334,7 @@
 }
 
 /* ── Content panel: card structure (설교/QT 포맷) ── */
-.pbs-content-body { padding: 20px 22px 100px; display: flex; flex-direction: column; gap: 16px; }
+.pbs-content-body { padding: 0; display: flex; flex-direction: column; min-height: 0; height: 100%; }
 
 .pbs-title-card {
   flex-shrink: 0;
@@ -383,18 +385,24 @@
 .pbs-page-title-edit:focus { border-bottom: 2px solid var(--accent); }
 
 /* ── Section card (영역별 페이징) ── */
-.pbs-section-card {
+.pbs-page-card {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  margin-bottom: 0;
 }
+.pbs-page-card-header { padding: 14px 18px 12px; }
+.pbs-title-body { padding: 14px 18px 12px; }
+
 .pbs-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
+  padding: 12px 18px 0;
+  border-top: 1px solid var(--cream-dark);
 }
 .pbs-section-header .card-title {
   font-size: 14px;
