@@ -1,5 +1,14 @@
 <template>
-  <div class="pbs-page" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+  <div class="pbs-page">
+
+    <!-- Page Header (설교 목록 화면 참조) -->
+    <div class="page-header-row">
+      <div>
+        <div class="page-title">P.B.S</div>
+        <div class="page-desc">개인성경 공부를 합니다</div>
+      </div>
+    </div>
+
     <div class="pbs-split-area">
 
       <!-- ── Panel 1: Page Tree ── -->

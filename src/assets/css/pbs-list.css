@@ -1,6 +1,12 @@
 /* ── PbsListView: Confluence-style 3-split (Tree | Bible | Content) ── */
-/* Overrides DefaultLayout's .content padding to use full-height split */
-
+/* Page header padding (설교 목록 참조) */
+.pbs-page {
+  padding: 24px 24px 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 .pbs-page .content {
   padding: 0 !important;
   overflow: hidden;
@@ -10,8 +16,9 @@
   display: grid;
   grid-template-columns: 240px 1fr 1fr;
   gap: 0;
-  height: 100%;
+  flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 
 .pbs-panel {
