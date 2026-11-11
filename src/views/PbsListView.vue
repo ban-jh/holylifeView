@@ -55,8 +55,25 @@
                 >
                   <svg class="pbs-tree-chevron" :class="{ open: expandedFolders.has(folder.folderId) }" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
                   <svg class="pbs-tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                  <span class="pbs-tree-label">{{ folder.folderName }}</span>
+                  <span v-if="editingFolderId !== folder.folderId" class="pbs-tree-label">{{ folder.folderName }}</span>
+                  <input
+                    v-else
+                    class="pbs-tree-label-input"
+                    type="text"
+                    v-model="editingFolderName"
+                    @click.stop
+                    @keydown.enter.prevent="saveFolderName(folder)"
+                    @keydown.esc.prevent="cancelFolderEdit"
+                    @blur="saveFolderName(folder)"
+                  >
                   <span class="pbs-tree-count">{{ folder.pages?.length || 0 }}</span>
+                  <button
+                    class="pbs-tree-folder-edit-btn"
+                    @click.stop="startEditFolder(folder)"
+                    title="폴더 이름 수정"
+                  >
+                    <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                  </button>
                   <button
                     class="pbs-tree-folder-delete-btn"
                     @click.stop="handleDeleteFolder(folder)"
@@ -64,6 +81,25 @@
                   >
                     <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                   </button>
+                </div>
+
+                <!-- 인라인 폴더 생성 (포커싱된 폴더 바로 아래) -->
+                <div
+                  v-if="creatingFolder && createAfterFolderId === folder.folderId"
+                  class="pbs-tree-row pbs-tree-create-row"
+                >
+                  <svg class="pbs-tree-chevron" viewBox="0 0 24 24" style="visibility:hidden"><polyline points="9 6 15 12 9 18"/></svg>
+                  <svg class="pbs-tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  <input
+                    class="pbs-tree-label-input"
+                    type="text"
+                    v-model="newFolderName"
+                    placeholder="폴더 이름 입력 후 Enter"
+                    @click.stop
+                    @keydown.enter.prevent="commitCreateFolder"
+                    @keydown.esc.prevent="cancelCreateFolder"
+                    @blur="commitCreateFolder"
+                  >
                 </div>
                 <div
                   class="pbs-tree-sub"
@@ -106,6 +142,25 @@
                     </button>
                   </div>
                 </div>
+              </div>
+
+              <!-- 폴더가 없거나 포커스가 없을 때: 트리 맨 아래 인라인 생성 -->
+              <div
+                v-if="creatingFolder && createAfterFolderId === null"
+                class="pbs-tree-row pbs-tree-create-row"
+              >
+                <svg class="pbs-tree-chevron" viewBox="0 0 24 24" style="visibility:hidden"><polyline points="9 6 15 12 9 18"/></svg>
+                <svg class="pbs-tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <input
+                  class="pbs-tree-label-input"
+                  type="text"
+                  v-model="newFolderName"
+                  placeholder="폴더 이름 입력 후 Enter"
+                  @click.stop
+                  @keydown.enter.prevent="commitCreateFolder"
+                  @keydown.esc.prevent="cancelCreateFolder"
+                  @blur="commitCreateFolder"
+                >
               </div>
             </nav>
           </div>
@@ -276,7 +331,7 @@
 <script setup lang="ts">
 import '@/assets/css/pbs-list.css'
 import '@/assets/css/rich-text-editor.css'
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { pbsApi, bibleApi } from '@/api'
 import { useToast } from '@/composables/useToast'
 import RichTextEditor from '@/components/RichTextEditor.vue'
@@ -331,6 +386,13 @@ const treeSearch = ref('')
 const saveStatus = ref<'idle' | 'saving' | 'saved'>('idle')
 const lastClickedFolderId = ref<number | null>(null)
 const focusedFolderId = ref<number | null>(null)
+
+// 폴더 이름 수정 / 인라인 생성
+const editingFolderId = ref<number | null>(null)
+const editingFolderName = ref('')
+const creatingFolder = ref(false)
+const newFolderName = ref('')
+const createAfterFolderId = ref<number | null>(null)
 
 // Section state
 const sections = ref<PbsSection[]>([])
@@ -438,16 +500,102 @@ async function fetchFolders() {
   }
 }
 
-async function handleCreateFolder() {
-  const name = prompt('폴더 이름을 입력하세요', '새 폴더')
-  if (!name?.trim()) return
+// ── 폴더 인라인 생성 / 이름 수정 ──
+function focusTreeInput() {
+  nextTick(() => {
+    const el = document.querySelector('.pbs-tree-label-input') as HTMLInputElement | null
+    if (el) { el.focus(); el.select() }
+  })
+}
+
+// 폴더 생성: 포커싱된 폴더 바로 아래에 인라인 입력창 표시
+function handleCreateFolder() {
+  if (creatingFolder.value) return
+  editingFolderId.value = null
+  createAfterFolderId.value = focusedFolderId.value   // null이면 트리 맨 아래
+  newFolderName.value = ''
+  creatingFolder.value = true
+  focusTreeInput()
+}
+
+function cancelCreateFolder() {
+  creatingFolder.value = false
+  newFolderName.value = ''
+  createAfterFolderId.value = null
+}
+
+let createCommitting = false
+async function commitCreateFolder() {
+  if (!creatingFolder.value || createCommitting) return
+  const name = newFolderName.value.trim()
+  const afterId = createAfterFolderId.value
+  creatingFolder.value = false
+  if (!name) { cancelCreateFolder(); return }
+  createCommitting = true
   try {
-    await pbsApi.createFolder({ folderName: name.trim() })
-    showToast('폴더가 생성되었습니다.')
+    const res = await pbsApi.createFolder({ folderName: name })
+    const newId: number | undefined = res.data?.folderId
     await fetchFolders()
+
+    // 포커싱된 폴더 바로 아래로 위치 이동
+    if (newId && afterId != null) {
+      const ids = folders.value.map(f => f.folderId).filter(id => id !== newId)
+      const idx = ids.indexOf(afterId)
+      if (idx >= 0) {
+        ids.splice(idx + 1, 0, newId)
+        await pbsApi.reorderFolders(ids.map((id, i) => ({ folderId: id, sortOrder: i })))
+        await fetchFolders()
+      }
+    }
+    if (newId) {
+      focusedFolderId.value = newId
+      lastClickedFolderId.value = newId
+      expandedFolders.value.add(newId)
+    }
+    showToast('폴더가 생성되었습니다.')
   } catch (e) {
     console.error('폴더 생성 실패:', e)
     showToast('폴더 생성 중 오류가 발생했습니다.')
+  } finally {
+    createCommitting = false
+    newFolderName.value = ''
+    createAfterFolderId.value = null
+  }
+}
+
+// 폴더 이름 수정
+function startEditFolder(folder: PbsFolder) {
+  creatingFolder.value = false
+  editingFolderId.value = folder.folderId
+  editingFolderName.value = folder.folderName
+  focusTreeInput()
+}
+
+function cancelFolderEdit() {
+  editingFolderId.value = null
+  editingFolderName.value = ''
+}
+
+let renameSaving = false
+async function saveFolderName(folder: PbsFolder) {
+  if (editingFolderId.value !== folder.folderId) return
+  const name = editingFolderName.value.trim()
+  const original = folder.folderName
+  editingFolderId.value = null   // blur/Enter 중복 호출 방지
+  editingFolderName.value = ''
+  if (!name || name === original) return
+  if (renameSaving) return
+  renameSaving = true
+  try {
+    await pbsApi.updateFolder(folder.folderId, { folderName: name })
+    folder.folderName = name
+    showToast('폴더 이름이 변경되었습니다.')
+  } catch (e) {
+    console.error('폴더 이름 변경 실패:', e)
+    showToast('폴더 이름 변경 중 오류가 발생했습니다.')
+    await fetchFolders()
+  } finally {
+    renameSaving = false
   }
 }
 
