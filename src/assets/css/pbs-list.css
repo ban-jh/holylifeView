@@ -603,3 +603,14 @@
   cursor: default;
   color: var(--text-primary);
 }
+
+/* PBS 에디터: 내부 고정 높이(600px)/이중 스크롤 제거
+   → 패널(.pbs-page-editor-body) 하나만 스크롤되어 이미지 하단까지 도달 */
+.pbs-page-editor-body { overscroll-behavior: contain; }
+.pbs-page-editor-body .tiptap-editor { overflow: visible; }
+.pbs-page-editor-body .tiptap-content {
+  max-height: none;
+  min-height: 240px;
+  overflow: visible;
+}
+.pbs-page-editor-body .tiptap-content .tiptap { min-height: 240px; }
