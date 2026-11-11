@@ -40,7 +40,7 @@
           <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         </div>
         <div>
-          <div class="stat-value">{{ pbsList.length }}</div>
+          <div class="stat-value">{{ pbsPages.length }}</div>
           <div class="stat-label">P.B.S</div>
           <div class="stat-change" :class="{ zero: pbsMonthCount === 0 }">
             {{ pbsMonthCount === 0 ? '이번 달 0건' : `+${pbsMonthCount} 이번 달` }}
@@ -77,8 +77,8 @@
           <div class="qt-date-row">
             <span class="qt-date">{{ formattedToday }}</span>
           </div>
-          <div class="qt-title">{{ todayQt.title || todayQt.qtTitle || '오늘의 큐티' }}</div>
-          <div class="qt-bible-ref">{{ todayQt.bibleRef || todayQt.bibleReference || '-' }}</div>
+          <div class="qt-title">{{ todayQt.title || '오늘의 큐티' }}</div>
+          <div class="qt-bible-ref">{{ todayQt.bibleRef || '-' }}</div>
           <div class="qt-preview">{{ qtPreviewText }}</div>
           <div class="qt-action-row">
             <span style="font-size:12px;color:var(--text-muted);">오늘의 QT를 묵상하고 기록해 보세요</span>
@@ -162,7 +162,7 @@
           QT <span class="tab-count">{{ recentQts.length }}</span>
         </button>
         <button class="dash-tab" :class="{ active: activeTab === 'pbs' }" @click="activeTab = 'pbs'">
-          P.B.S <span class="tab-count">{{ recentPbs.length }}</span>
+          P.B.S <span class="tab-count">{{ pbsPages.length }}</span>
         </button>
         <button class="dash-tab" :class="{ active: activeTab === 'reading' }" @click="activeTab = 'reading'">
           독서 <span class="tab-count">{{ recentReadings.length }}</span>
@@ -236,27 +236,28 @@
           <thead>
             <tr>
               <th>제목</th>
+              <th>폴더</th>
               <th>성경 구절</th>
-              <th>PBS 날짜</th>
+              <th>수정일</th>
               <th>상태</th>
-              <th style="width:120px;text-align:right;">관리</th>
+              <th style="width:80px;text-align:right;">관리</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in recentPbs" :key="item.pbsId" @click="router.push(`/pbs/${item.pbsId}`)">
+            <tr v-for="item in recentPbs" :key="item.pageId" @click="router.push('/pbs')">
               <td class="recent-title">{{ item.title }}</td>
+              <td>{{ item.folderName || '-' }}</td>
               <td>{{ pbsRefText(item) }}</td>
-              <td class="recent-date">{{ item.pbsDate }}</td>
-              <td><span class="status-badge" :class="statusClass(item.status)">{{ item.status || '-' }}</span></td>
+              <td class="recent-date">{{ formatDate(item.updatedAt) }}</td>
+              <td><span class="status-badge" :class="statusClass(item.status)">{{ item.status === 'PUBLISHED' ? '배포됨' : '임시저장' }}</span></td>
               <td>
                 <div class="row-actions">
-                  <button class="table-action" @click.stop="router.push(`/pbs/${item.pbsId}`)">보기</button>
-                  <button class="table-action" @click.stop="router.push(`/pbs/${item.pbsId}`)">수정</button>
+                  <button class="table-action" @click.stop="router.push('/pbs')">열기</button>
                 </div>
               </td>
             </tr>
             <tr v-if="recentPbs.length === 0">
-              <td colspan="5" class="table-empty">등록된 P.B.S가 없습니다.</td>
+              <td colspan="6" class="table-empty">등록된 P.B.S가 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -307,7 +308,7 @@ import '@/assets/css/dashboard.css'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
-import { sermonApi, qtApi, pbsApi, readingApi, qtDailyApi } from '@/api'
+import { sermonApi, qtApi, pbsApi, readingApi, qtDailyApi, bibleApi } from '@/api'
 
 const router = useRouter()
 const { showToast } = useToast()
@@ -315,9 +316,10 @@ const { showToast } = useToast()
 const loading = ref(true)
 const sermons = ref<any[]>([])
 const qts = ref<any[]>([])
-const pbsList = ref<any[]>([])
+const pbsPages = ref<any[]>([])
 const readings = ref<any[]>([])
 const todayQt = ref<any>(null)
+const bookNames = ref<Record<string, string>>({})
 const activeTab = ref('sermon')
 
 const now = new Date()
@@ -332,7 +334,12 @@ const countThisMonth = (items: any[], dateField: string) =>
 
 const sermonMonthCount = computed(() => countThisMonth(sermons.value, 'sermonDate'))
 const qtMonthCount = computed(() => countThisMonth(qts.value, 'qtDate'))
-const pbsMonthCount = computed(() => countThisMonth(pbsList.value, 'pbsDate'))
+const pbsMonthCount = computed(() =>
+  pbsPages.value.filter(p => {
+    const d = new Date(p.updatedAt || p.createdAt)
+    return d.getMonth() === thisMonth && d.getFullYear() === thisYear
+  }).length
+)
 const readingMonthCount = computed(() => countThisMonth(readings.value, 'readDate'))
 
 const totalMonthCount = computed(() =>
@@ -359,7 +366,8 @@ const monthlyLabel = computed(() => {
 
 const qtPreviewText = computed(() => {
   if (!todayQt.value) return ''
-  const text = todayQt.value.bibleText || todayQt.value.content || todayQt.value.preview || ''
+  const raw = todayQt.value.bibleText || todayQt.value.content || ''
+  const text = String(raw).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
   return text.length > 100 ? text.substring(0, 100) + '...' : text
 })
 
@@ -370,11 +378,18 @@ const recentQts = computed(() =>
   [...qts.value].sort((a, b) => new Date(b.qtDate).getTime() - new Date(a.qtDate).getTime()).slice(0, 5)
 )
 const recentPbs = computed(() =>
-  [...pbsList.value].sort((a, b) => new Date(b.pbsDate).getTime() - new Date(a.pbsDate).getTime()).slice(0, 5)
+  [...pbsPages.value]
+    .sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime())
+    .slice(0, 5)
 )
 const recentReadings = computed(() =>
   [...readings.value].sort((a, b) => new Date(b.readDate).getTime() - new Date(a.readDate).getTime()).slice(0, 5)
 )
+
+function formatDate(value: string | null | undefined) {
+  if (!value) return '-'
+  return String(value).slice(0, 10)
+}
 
 function statusClass(status: string) {
   const s = (status || '').toUpperCase()
@@ -387,17 +402,26 @@ function statusClass(status: string) {
 
 function pbsRefText(item: any) {
   if (item.bibleRef) return item.bibleRef
-  const from = item.bookFrom || ''
-  const to = item.bookTo || ''
-  if (from && to) return `${from} ~ ${to}`
-  return from || to || '-'
+  const book = bookNames.value[item.bookCode] || item.bookNameKr || item.bookCode || ''
+  if (!book) return '-'
+  const chFrom = item.chapterFrom
+  const vFrom = item.verseFrom
+  const chTo = item.chapterTo || chFrom
+  const vTo = item.verseTo
+  if (chFrom == null) return book
+  let ref = `${book} ${chFrom}`
+  if (vFrom != null) ref += `:${vFrom}`
+  if (chTo != null && (chTo !== chFrom || (vTo != null && vTo !== vFrom))) {
+    ref += ` ~ ${chTo}` + (vTo != null ? `:${vTo}` : '')
+  }
+  return ref
 }
 
 function goToNewContent() {
   const map: Record<string, string> = {
     sermon: '/sermons/new',
     qt: '/qts/new',
-    pbs: '/pbs/new',
+    pbs: '/pbs',
     reading: '/readings/new',
   }
   router.push(map[activeTab.value] || '/sermons/new')
@@ -416,19 +440,38 @@ function goToAllContent() {
 onMounted(async () => {
   loading.value = true
   try {
-    const [sermonsRes, qtsRes, pbsRes, readingsRes, todayQtRes] = await Promise.all([
+    const [sermonsRes, qtsRes, foldersRes, readingsRes, todayQtRes, booksRes] = await Promise.all([
       sermonApi.getAll(),
       qtApi.getAll(),
-      pbsApi.getAll(),
+      pbsApi.getFolders(),
       readingApi.getAll(),
       qtDailyApi.getToday('duranno').catch(() => null),
+      bibleApi.getBooks(2).catch(() => null),
     ])
     sermons.value = sermonsRes.data || []
     qts.value = qtsRes.data || []
-    pbsList.value = pbsRes.data || []
     readings.value = readingsRes.data || []
     todayQt.value = todayQtRes?.data || null
+    // 생명의삶(duranno) 데이터가 없으면 SUM QT로 대체
+    if (!todayQt.value) {
+      const sumRes = await qtDailyApi.getToday('sum').catch(() => null)
+      todayQt.value = sumRes?.data || null
+    }
+
+    // 성경 book_code → 한글 책명 매핑 (P.B.S 구절 표시용)
+    const books = booksRes?.data || []
+    bookNames.value = books.reduce((acc: Record<string, string>, b: any) => {
+      if (b.bookCode) acc[b.bookCode] = b.bookNameKr || b.bookName
+      return acc
+    }, {})
+
+    // P.B.S: 폴더 트리 → 페이지 목록으로 평탄화 (폴더명 포함)
+    const folders = foldersRes.data || []
+    pbsPages.value = folders.flatMap((f: any) =>
+      (f.pages || []).map((p: any) => ({ ...p, folderName: f.folderName }))
+    )
   } catch (e: any) {
+    console.error('대시보드 로드 실패:', e)
     showToast('대시보드 데이터를 불러오지 못했습니다.')
   } finally {
     loading.value = false

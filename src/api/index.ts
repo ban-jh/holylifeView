@@ -83,13 +83,6 @@ export const qtDailyApi = {
 
 // PBS API — folders + pages (Confluence-style 3-split)
 export const pbsApi = {
-  // Legacy (kept for backward compat)
-  getAll: () => api.get('/pbs'),
-  getById: (id: number) => api.get(`/pbs/${id}`),
-  create: (data: any) => api.post('/pbs', data),
-  update: (id: number, data: any) => api.put(`/pbs/${id}`, data),
-  delete: (id: number) => api.delete(`/pbs/${id}`),
-
   // Folders
   getFolders: () => api.get('/pbs/folders'),
   createFolder: (data: { folderName: string; parentId?: number }) => api.post('/pbs/folders', data),
