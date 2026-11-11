@@ -71,7 +71,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
-import Image from '@tiptap/extension-image'
+import ResizableImage from '@/components/ResizableImage'
 import { TextStyle, FontFamily, FontSize, Color } from '@tiptap/extension-text-style'
 import Highlight from '@tiptap/extension-highlight'
 import { watch, onBeforeUnmount, ref } from 'vue'
@@ -172,7 +172,7 @@ const editor = useEditor({
     Link.configure({ openOnClick: false }),
     Underline,
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
-    Image,
+    ResizableImage.configure({ inline: false, allowBase64: true }),
     TextStyle,
     FontFamily,
     Color,
