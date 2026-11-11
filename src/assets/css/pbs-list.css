@@ -15,7 +15,7 @@
 .pbs-split-area {
   display: grid;
   grid-template-columns: 240px 1fr 1fr;
-  gap: 0;
+  gap: 12px;
   flex: 1;
   overflow: hidden;
   min-height: 0;
@@ -29,17 +29,17 @@
 }
 
 .pbs-panel-tree {
-  border-right: 1px solid var(--sand);
-  background: var(--cream);
+  border-right: none;
+  background: transparent;
 }
 
 .pbs-panel-bible {
-  border-right: 1px solid var(--sand);
-  background: var(--warm-white);
+  border-right: none;
+  background: transparent;
 }
 
 .pbs-panel-content {
-  background: var(--cream);
+  background: transparent;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--sand) transparent;
@@ -47,14 +47,11 @@
 .pbs-panel-content::-webkit-scrollbar { width: 6px; }
 .pbs-panel-content::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
 
-/* ── Panel header ── */
-.pbs-panel-header {
-  padding: 14px 18px 10px;
-  border-bottom: 1px solid var(--sand);
-  background: var(--warm-white);
-  flex-shrink: 0;
-}
-.pbs-panel-title {
+/* ── Panel header → card-header/card-title (common.css 사용) ── */
+/* pbs-panel-header, pbs-panel-title 제거 → card-header, card-title 사용 */
+/* Tree/Bible card-specific header/title adjustments */
+.pbs-tree-card-header { padding: 14px 18px 10px; }
+.pbs-tree-card-title {
   font-size: 13px;
   font-weight: 700;
   color: var(--brown);
@@ -62,7 +59,7 @@
   align-items: center;
   gap: 8px;
 }
-.pbs-panel-title svg {
+.pbs-tree-card-title svg {
   width: 15px;
   height: 15px;
   stroke: var(--accent);
@@ -70,8 +67,44 @@
   stroke-width: 2;
 }
 
+.pbs-bible-card-header { padding: 14px 18px 10px; }
+.pbs-bible-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brown);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pbs-bible-card-title svg {
+  width: 15px;
+  height: 15px;
+  stroke: var(--accent);
+  fill: none;
+  stroke-width: 2;
+}
+
+/* ── Tree/Bible card: grid 내부에서 꽉 채우기 ── */
+.pbs-tree-card,
+.pbs-bible-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+  overflow: hidden;
+}
+.pbs-tree-card .card-body,
+.pbs-bible-card .card-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+}
+
 /* ── Tree panel ── */
-.pbs-tree-search { padding: 8px 12px 4px; }
+.pbs-tree-search { padding: 8px 12px 4px; flex-shrink: 0; }
 .pbs-tree-search-box {
   display: flex;
   align-items: center;
@@ -212,7 +245,7 @@
 .pbs-tree-register-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
 
 /* ── Bible panel ── */
-.pbs-bible-body {
+.pbs-bible-card-body {
   flex: 1;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -220,8 +253,8 @@
   display: flex;
   flex-direction: column;
 }
-.pbs-bible-body::-webkit-scrollbar { width: 5px; }
-.pbs-bible-body::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
+.pbs-bible-card-body::-webkit-scrollbar { width: 5px; }
+.pbs-bible-card-body::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
 
 .pbs-bible-select-row {
   display: flex; gap: 4px; align-items: center; flex-wrap: nowrap;
@@ -466,8 +499,8 @@
     grid-template-rows: auto auto 1fr;
     overflow-y: auto;
   }
-  .pbs-panel-tree { border-right: none; border-bottom: 1px solid var(--sand); max-height: 30vh; }
-  .pbs-panel-bible { border-right: none; border-bottom: 1px solid var(--sand); max-height: 40vh; }
+  .pbs-panel-tree { max-height: 30vh; }
+  .pbs-panel-bible { max-height: 40vh; }
   .pbs-bible-select-row { flex-wrap: wrap; padding: 8px 12px; }
   .pbs-bible-select-row select { font-size: 11px; padding: 6px 4px; }
   .pbs-bible-num-select { min-width: 34px; max-width: 42px; }

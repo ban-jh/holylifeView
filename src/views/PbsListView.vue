@@ -11,88 +11,93 @@
 
     <div class="pbs-split-area">
 
-      <!-- ── Panel 1: Page Tree ── -->
+      <!-- ── Panel 1: Page Tree (card 형태) ── -->
       <div class="pbs-panel pbs-panel-tree">
-        <div class="pbs-panel-header">
-          <div class="pbs-panel-title">
-            <svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
-            성경공부
-            <button class="pbs-tree-folder-btn" @click="handleCreateFolder" title="폴더 생성">
-              <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-            </button>
-            <button class="pbs-tree-register-btn" @click="handleCreatePage" title="페이지 등록">
-              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="13" x2="12" y2="17"/><line x1="10" y1="15" x2="14" y2="15"/></svg>
-            </button>
-          </div>
-        </div>
-        <div class="pbs-tree-search">
-          <div class="pbs-tree-search-box">
-            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" v-model="treeSearch" placeholder="성경공부 검색...">
-          </div>
-        </div>
-        <nav class="pbs-tree-nav">
-          <div v-if="folders.length === 0" class="pbs-tree-empty">
-            폴더가 없습니다.<br/>상단 + 버튼으로 폴더를 생성하세요.
-          </div>
-          <div
-            v-for="folder in filteredFolders"
-            :key="folder.folderId"
-            class="pbs-tree-node"
-          >
-            <div
-              class="pbs-tree-row"
-              :class="{ 'parent-active': isFolderActive(folder) }"
-              @click="toggleFolder(folder.folderId)"
-            >
-              <svg class="pbs-tree-chevron" :class="{ open: expandedFolders.has(folder.folderId) }" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
-              <svg class="pbs-tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-              <span class="pbs-tree-label">{{ folder.folderName }}</span>
-              <span class="pbs-tree-count">{{ folder.pages?.length || 0 }}</span>
-              <button
-                class="pbs-tree-folder-delete-btn"
-                @click.stop="handleDeleteFolder(folder)"
-                title="폴더 삭제"
-              >
-                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        <div class="card pbs-tree-card">
+          <div class="card-header pbs-tree-card-header">
+            <div class="card-title pbs-tree-card-title">
+              <svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
+              성경공부
+              <button class="pbs-tree-folder-btn" @click="handleCreateFolder" title="폴더 생성">
+                <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+              </button>
+              <button class="pbs-tree-register-btn" @click="handleCreatePage" title="페이지 등록">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="13" x2="12" y2="17"/><line x1="10" y1="15" x2="14" y2="15"/></svg>
               </button>
             </div>
-            <div class="pbs-tree-sub" :class="{ open: expandedFolders.has(folder.folderId) }">
-              <div
-                v-for="page in folder.pages"
-                :key="page.pageId"
-                class="pbs-tree-sub-item-wrapper"
-              >
-                <div
-                  class="pbs-tree-sub-item"
-                  :class="{ active: selectedPageId === page.pageId }"
-                  @click="selectPage(page.pageId)"
-                >
-                  <span>{{ page.title }}</span>
-                </div>
-                <button
-                  class="pbs-tree-delete-btn"
-                  @click.stop="handleDeletePage(page, folder)"
-                  title="삭제"
-                >
-                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                </button>
+          </div>
+          <div class="card-body pbs-tree-card-body">
+            <div class="pbs-tree-search">
+              <div class="pbs-tree-search-box">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" v-model="treeSearch" placeholder="성경공부 검색...">
               </div>
             </div>
-          </div>
-        </nav>
-      </div>
-
-      <!-- ── Panel 2: Bible ── -->
-      <div class="pbs-panel pbs-panel-bible">
-        <div class="pbs-panel-header">
-          <div class="pbs-panel-title">
-            <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            성경 말씀
+            <nav class="pbs-tree-nav">
+              <div v-if="folders.length === 0" class="pbs-tree-empty">
+                폴더가 없습니다.<br/>상단 + 버튼으로 폴더를 생성하세요.
+              </div>
+              <div
+                v-for="folder in filteredFolders"
+                :key="folder.folderId"
+                class="pbs-tree-node"
+              >
+                <div
+                  class="pbs-tree-row"
+                  :class="{ 'parent-active': isFolderActive(folder) }"
+                  @click="toggleFolder(folder.folderId)"
+                >
+                  <svg class="pbs-tree-chevron" :class="{ open: expandedFolders.has(folder.folderId) }" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+                  <svg class="pbs-tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  <span class="pbs-tree-label">{{ folder.folderName }}</span>
+                  <span class="pbs-tree-count">{{ folder.pages?.length || 0 }}</span>
+                  <button
+                    class="pbs-tree-folder-delete-btn"
+                    @click.stop="handleDeleteFolder(folder)"
+                    title="폴더 삭제"
+                  >
+                    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                </div>
+                <div class="pbs-tree-sub" :class="{ open: expandedFolders.has(folder.folderId) }">
+                  <div
+                    v-for="page in folder.pages"
+                    :key="page.pageId"
+                    class="pbs-tree-sub-item-wrapper"
+                  >
+                    <div
+                      class="pbs-tree-sub-item"
+                      :class="{ active: selectedPageId === page.pageId }"
+                      @click="selectPage(page.pageId)"
+                    >
+                      <span>{{ page.title }}</span>
+                    </div>
+                    <button
+                      class="pbs-tree-delete-btn"
+                      @click.stop="handleDeletePage(page, folder)"
+                      title="삭제"
+                    >
+                      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </nav>
           </div>
         </div>
-        <div class="pbs-bible-body">
-          <div class="pbs-bible-select-row">
+      </div>
+
+      <!-- ── Panel 2: Bible (card 형태) ── -->
+      <div class="pbs-panel pbs-panel-bible">
+        <div class="card pbs-bible-card">
+          <div class="card-header pbs-bible-card-header">
+            <div class="card-title pbs-bible-card-title">
+              <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              성경 말씀
+            </div>
+          </div>
+          <div class="card-body pbs-bible-card-body">
+            <div class="pbs-bible-select-row">
             <select class="pbs-bible-testament-select" v-model="bible.testament" @change="onTestamentChange">
               <option value="">신구약</option>
               <option value="OLD">구약</option>
@@ -133,6 +138,7 @@
             <div v-if="bibleLoading" style="color: var(--text-muted)">성경 불러오는 중...</div>
             <div v-else-if="currentBibleVerses.length > 0" v-html="bibleTextHtml"></div>
             <div v-else style="color: var(--text-muted)">성경 구절을 선택하면 본문이 표시됩니다.</div>
+          </div>
           </div>
         </div>
       </div>
