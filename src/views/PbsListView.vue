@@ -65,7 +65,19 @@
                     <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                   </button>
                 </div>
-                <div class="pbs-tree-sub" :class="{ open: expandedFolders.has(folder.folderId) }">
+                <div
+                  class="pbs-tree-sub"
+                  :class="{ open: expandedFolders.has(folder.folderId), 'drop-zone': dragOverId === `folderbody-${folder.folderId}` }"
+                  @dragover="onDragOverEmptyFolder($event, folder.folderId)"
+                  @dragleave="onDragLeave"
+                  @drop="onDropEmptyFolder($event, folder.folderId)"
+                >
+                  <div
+                    v-if="!folder.pages || folder.pages.length === 0"
+                    class="pbs-tree-empty-hint"
+                  >
+                    페이지 없음 — 페이지를 여기로 끌어다 놓으세요
+                  </div>
                   <div
                     v-for="page in folder.pages"
                     :key="page.pageId"
@@ -81,7 +93,7 @@
                     <div
                       class="pbs-tree-sub-item"
                       :class="{ active: selectedPageId === page.pageId }"
-                      @click="selectPage(page.pageId)"
+                      @click="selectPage(page.pageId, folder.folderId)"
                     >
                       <span>{{ page.title }}</span>
                     </div>
@@ -317,6 +329,7 @@ const currentPage = ref<PbsPage | null>(null)
 const treeSearch = ref('')
 const saveStatus = ref<'idle' | 'saving' | 'saved'>('idle')
 const lastClickedFolderId = ref<number | null>(null)
+const focusedFolderId = ref<number | null>(null)
 
 // Section state
 const sections = ref<PbsSection[]>([])
@@ -454,7 +467,18 @@ async function handleDeleteFolder(folder: PbsFolder) {
 }
 
 // ── API: Pages ──
-async function selectPage(pageId: number) {
+async function selectPage(pageId: number, folderId?: number) {
+  // 페이지 선택 시: 해당 페이지만 포커스 + 소속 폴더 포커스
+  if (folderId !== undefined) {
+    focusedFolderId.value = folderId
+    lastClickedFolderId.value = folderId
+  } else {
+    const owner = folders.value.find(f => f.pages?.some(p => p.pageId === pageId))
+    if (owner) {
+      focusedFolderId.value = owner.folderId
+      lastClickedFolderId.value = owner.folderId
+    }
+  }
   if (selectedPageId.value === pageId && currentPage.value) return
   selectedPageId.value = pageId
   try {
@@ -701,7 +725,10 @@ async function handlePublish() {
 
 // ── Tree interactions ──
 function toggleFolder(folderId: number) {
+  // 폴더 선택 시: 해당 폴더만 포커스, 페이지 포커스 해제
+  focusedFolderId.value = folderId
   lastClickedFolderId.value = folderId
+  selectedPageId.value = null
   if (expandedFolders.value.has(folderId)) {
     expandedFolders.value.delete(folderId)
   } else {
@@ -710,8 +737,7 @@ function toggleFolder(folderId: number) {
 }
 
 function isFolderActive(folder: PbsFolder): boolean {
-  return expandedFolders.value.has(folder.folderId) ||
-    (folder.pages?.some(p => p.pageId === selectedPageId.value) ?? false)
+  return focusedFolderId.value === folder.folderId
 }
 
 // ── Drag and Drop ──
@@ -733,13 +759,46 @@ function onDragStart(e: DragEvent, type: 'folder' | 'page', id: number, folderId
 
 function onDragOver(e: DragEvent, type: 'folder' | 'page', id: number, folderId?: number) {
   if (!dragData.value) return
-  // Only allow same-type drag
-  if (dragData.value.type !== type) return
-  // Don't allow dropping on self
-  if (dragData.value.id === id) return
+  e.stopPropagation()   // 상위 폴더 영역(drop-zone)으로 이벤트 전파 방지
+  // 같은 항목 위로는 드롭 금지
+  if (dragData.value.id === id && dragData.value.type === type) return
+  // 폴더 행: 페이지 이동(다른 폴더의 페이지 포함) 또는 폴더 순서 변경 허용
+  if (type === 'folder') {
+    if (dragData.value.type === 'page') {
+      // 같은 폴더 내 페이지는 폴더 행 드롭 불필요 (순서 변경은 페이지 행에서)
+      if (dragData.value.folderId === id) return
+    }
+    e.preventDefault()
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+    dragOverId.value = `folder-${id}`
+    return
+  }
+  // 페이지 행: 페이지끼리만
+  if (dragData.value.type !== 'page') return
   e.preventDefault()
   if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
-  dragOverId.value = `${type}-${id}`
+  dragOverId.value = `page-${id}`
+}
+
+// 빈 폴더(또는 폴더 하위 영역)에 드롭 — 페이지를 폴더 끝으로 이동
+function onDragOverEmptyFolder(e: DragEvent, folderId: number) {
+  if (!dragData.value || dragData.value.type !== 'page') return
+  if (dragData.value.folderId === folderId) return
+  e.preventDefault()
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+  dragOverId.value = `folderbody-${folderId}`
+}
+
+function onDropEmptyFolder(e: DragEvent, folderId: number) {
+  e.preventDefault()
+  e.stopPropagation()
+  if (!dragData.value) return
+  const item = dragData.value
+  dragData.value = null
+  dragOverId.value = null
+  if (item.type !== 'page' || !item.folderId) return
+  if (item.folderId === folderId) return
+  movePageToFolder(item.id, item.folderId, folderId)
 }
 
 function onDragLeave() {
@@ -759,13 +818,56 @@ async function onDrop(e: DragEvent, type: 'folder' | 'page', targetId: number, t
   dragData.value = null
   dragOverId.value = null
 
-  if (item.type !== type) return
-  if (item.id === targetId) return
-
+  // 폴더 행에 드롭
   if (type === 'folder') {
-    await reorderFolders(item.id, targetId)
-  } else {
-    await reorderPages(item.id, item.folderId, targetId, targetFolderId)
+    if (item.type === 'page') {
+      // 페이지를 해당 폴더로 이동
+      if (!item.folderId || item.folderId === targetId) return
+      await movePageToFolder(item.id, item.folderId, targetId)
+      return
+    }
+    if (item.type === 'folder') {
+      if (item.id === targetId) return
+      await reorderFolders(item.id, targetId)
+    }
+    return
+  }
+
+  // 페이지 행에 드롭 — 페이지끼리만
+  if (item.type !== 'page') return
+  if (item.id === targetId) return
+  await reorderPages(item.id, item.folderId, targetId, targetFolderId)
+}
+
+// 페이지를 다른 폴더로 이동 (폴더 끝에 추가)
+async function movePageToFolder(pageId: number, sourceFolderId: number, targetFolderId: number) {
+  const srcFolder = folders.value.find(f => f.folderId === sourceFolderId)
+  const tgtFolder = folders.value.find(f => f.folderId === targetFolderId)
+  if (!srcFolder || !tgtFolder) return
+  if (!srcFolder.pages) srcFolder.pages = []
+  if (!tgtFolder.pages) tgtFolder.pages = []
+
+  const fromIdx = srcFolder.pages.findIndex(p => p.pageId === pageId)
+  if (fromIdx < 0) return
+  const [moved] = srcFolder.pages.splice(fromIdx, 1)
+  moved.folderId = targetFolderId
+  tgtFolder.pages.push(moved)   // 폴더 끝에 추가 (빈 폴더도 가능)
+
+  const srcReorder = srcFolder.pages.map((p, i) => ({ pageId: p.pageId, sortOrder: i, folderId: sourceFolderId }))
+  const tgtReorder = tgtFolder.pages.map((p, i) => ({ pageId: p.pageId, sortOrder: i, folderId: targetFolderId }))
+
+  // 대상 폴더 펼치고 포커스
+  expandedFolders.value.add(targetFolderId)
+  focusedFolderId.value = targetFolderId
+  lastClickedFolderId.value = targetFolderId
+
+  try {
+    await pbsApi.reorderPages([...tgtReorder, ...srcReorder])
+    showToast(`'${moved.title}' 페이지를 '${tgtFolder.folderName}' 폴더로 이동했습니다.`)
+  } catch (err) {
+    console.error('페이지 이동 실패:', err)
+    showToast('페이지 이동 중 오류가 발생했습니다.')
+    await fetchFolders()
   }
 }
 
