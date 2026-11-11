@@ -266,13 +266,17 @@
   flex: 1;
 }
 
-/* ── Content panel ── */
-.pbs-content-body { padding: 20px 22px 100px; }
+/* ── Content panel: card structure (설교/QT 포맷) ── */
+.pbs-content-body { padding: 20px 22px 100px; display: flex; flex-direction: column; gap: 16px; }
 
-.pbs-page-title-area { margin-bottom: 18px; }
+.pbs-title-card {
+  flex-shrink: 0;
+}
+.pbs-title-card .card-body { padding: 10px 18px 16px; }
+
 .pbs-page-meta-row {
   display: flex; align-items: center; gap: 10px;
-  margin-bottom: 8px; flex-wrap: wrap;
+  margin-bottom: 0; flex-wrap: wrap;
 }
 .pbs-page-meta-tag {
   display: inline-flex; align-items: center; gap: 5px;
@@ -311,52 +315,116 @@
   padding: 2px 0;
   font-family: inherit;
 }
-.pbs-page-title-edit:focus { border: none; box-shadow: none; background: transparent; border-bottom: 2px solid var(--accent); }
+.pbs-page-title-edit:focus { border-bottom: 2px solid var(--accent); }
 
-/* Content card */
-.pbs-content-card {
-  background: var(--warm-white);
-  border: 1px solid var(--sand);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  margin-bottom: 16px;
+/* ── Section card (영역별 페이징) ── */
+.pbs-section-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
-.pbs-content-card-header {
-  padding: 12px 18px 10px;
-  border-bottom: 1px solid var(--cream-dark);
-  display: flex; align-items: center; gap: 10px;
+.pbs-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
 }
-.pbs-content-card-icon {
-  width: 30px; height: 30px;
-  border-radius: var(--radius-sm);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; font-size: 13px; font-weight: 700;
-  color: #fff; background: var(--accent);
-}
-.pbs-content-card-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
-.pbs-content-card-subtitle { font-size: 11px; color: var(--text-muted); }
-.pbs-content-card-body { padding: 14px 18px; }
-
-.pbs-content-textarea {
-  width: 100%;
-  min-height: 300px;
-  border: 1.5px solid var(--sand);
-  border-radius: var(--radius-sm);
-  padding: 12px 14px;
-  font-size: 13px;
+.pbs-section-header .card-title {
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text-primary);
-  font-family: inherit;
-  line-height: 1.7;
-  resize: vertical;
-  outline: none;
-  background: var(--cream);
-  transition: border-color var(--transition), box-shadow var(--transition);
 }
-.pbs-content-textarea:focus {
-  border-color: var(--accent);
-  background: var(--warm-white);
-  box-shadow: 0 0 0 3px rgba(201,125,78,0.10);
+.pbs-section-tabs-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pbs-section-tabs {
+  border-bottom: 1px solid var(--sand);
+}
+.pbs-section-tab-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.pbs-section-tab-item .tab {
+  padding: 8px 14px;
+  font-size: 12.5px;
+}
+.pbs-section-delete-btn {
+  display: none;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px; height: 18px;
+  border: none; background: var(--cream-dark);
+  border-radius: 50%; cursor: pointer;
+  align-items: center; justify-content: center;
+  color: var(--text-muted); flex-shrink: 0;
+  transition: all var(--transition);
+  z-index: 1;
+}
+.pbs-section-tab-item:hover .pbs-section-delete-btn { display: flex; }
+.pbs-section-delete-btn:hover { color: #c0392b; background: #fdf0ee; }
+.pbs-section-delete-btn svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+.pbs-section-add-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border: none;
+  background: var(--accent); border-radius: 6px;
+  cursor: pointer; color: #fff; flex-shrink: 0;
+  transition: background var(--transition);
+}
+.pbs-section-add-btn:hover { background: var(--accent-hover); }
+.pbs-section-add-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+.pbs-section-card-body {
+  padding: 16px 18px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.pbs-section-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.pbs-section-title-row {
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.pbs-section-title-edit {
+  width: 100%;
+  font-size: 14px; font-weight: 700;
+  color: var(--text-primary);
+  border: none; border-bottom: 1.5px solid var(--sand);
+  background: transparent; outline: none;
+  padding: 4px 0;
+  font-family: inherit;
+  transition: border-color var(--transition);
+}
+.pbs-section-title-edit:focus { border-bottom-color: var(--accent); }
+.pbs-content-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  min-height: 300px;
+}
+.pbs-content-editor .tiptap-editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.pbs-content-editor .tiptap-content {
+  flex: 1;
+  min-height: 250px;
+  overflow-y: auto;
 }
 
 /* Empty state */

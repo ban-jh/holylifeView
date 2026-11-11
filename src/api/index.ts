@@ -103,6 +103,14 @@ export const pbsApi = {
   publishPage: (id: number) => api.put(`/pbs/pages/${id}/publish`),
   updatePage: (id: number, data: { title: string; content: string; testament?: string; bookCode?: string; chapterFrom?: number; verseFrom?: number; chapterTo?: number; verseTo?: number }) => api.put(`/pbs/pages/${id}`, data),
   deletePage: (id: number) => api.delete(`/pbs/pages/${id}`),
+
+  // Sections (영역별 페이징)
+  getSections: (pageId: number) => api.get(`/pbs/pages/${pageId}/sections`),
+  createSection: (pageId: number, data: { sectionTitle: string; content?: string; sortOrder?: number }) => api.post(`/pbs/pages/${pageId}/sections`, data),
+  updateSection: (sectionId: number, data: { sectionTitle?: string; content?: string; sortOrder?: number }) => api.put(`/pbs/sections/${sectionId}`, data),
+  updateSectionContent: (sectionId: number, data: { content: string }) => api.put(`/pbs/sections/${sectionId}/content`, data),
+  deleteSection: (sectionId: number) => api.delete(`/pbs/sections/${sectionId}`),
+  reorderSections: (pageId: number, orders: { sectionId: number; sortOrder: number }[]) => api.put(`/pbs/pages/${pageId}/sections/reorder`, orders),
 }
 
 // Reading Note API

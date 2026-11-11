@@ -128,7 +128,7 @@
         </div>
       </div>
 
-      <!-- ── Panel 3: Title + Content ── -->
+      <!-- ── Panel 3: Title + Content (설교/QT 포맷: card + 섹션 탭 + RichTextEditor) ── -->
       <div class="pbs-panel pbs-panel-content">
         <div v-if="!currentPage" class="pbs-empty-state">
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -136,50 +136,95 @@
           <div style="font-size: 11px">트리에서 페이지를 클릭하거나 + 버튼으로 새 페이지를 만들 수 있습니다.</div>
         </div>
         <div v-else class="pbs-content-body">
-          <!-- Page Title -->
-          <div class="pbs-page-title-area">
-            <div class="pbs-page-meta-row">
-              <span class="pbs-page-meta-tag">성경공부</span>
-              <span class="pbs-page-status-tag" :class="{ published: currentPage.status === 'PUBLISHED', saving: saveStatus === 'saving' }">
-                {{ statusLabel }}
-              </span>
-              <div style="margin-left: auto; display: flex; gap: 8px;">
-                <button
-                  class="pbs-btn-publish"
-                  @click="handlePublish"
-                  :disabled="currentPage.status === 'PUBLISHED'"
-                >
-                  {{ currentPage.status === 'PUBLISHED' ? '배포됨' : '배포' }}
+          <!-- Page Title (card 내부) -->
+          <section class="card pbs-title-card">
+            <div class="card-header">
+              <div class="pbs-page-meta-row">
+                <span class="pbs-page-meta-tag">성경공부</span>
+                <span class="pbs-page-status-tag" :class="{ published: currentPage.status === 'PUBLISHED', saving: saveStatus === 'saving' }">
+                  {{ statusLabel }}
+                </span>
+                <div style="margin-left: auto; display: flex; gap: 8px;">
+                  <button
+                    class="pbs-btn-publish"
+                    @click="handlePublish"
+                    :disabled="currentPage.status === 'PUBLISHED'"
+                  >
+                    {{ currentPage.status === 'PUBLISHED' ? '배포됨' : '배포' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <input
+                class="pbs-page-title-edit"
+                type="text"
+                v-model="currentPage.title"
+                placeholder="제목을 입력하세요"
+                @input="onTitleInput"
+              >
+            </div>
+          </section>
+
+          <!-- 영역별 페이징 (섹션 탭 + RichTextEditor) -->
+          <section class="card pbs-section-card">
+            <div class="card-header pbs-section-header">
+              <div class="card-title">영역별 내용</div>
+              <div class="pbs-section-tabs-wrap">
+                <!-- 섹션이 2개 이상이면 탭 표시 -->
+                <div v-if="sections.length > 1" class="tabs pbs-section-tabs">
+                  <div
+                    v-for="(section, idx) in sections"
+                    :key="section.sectionId"
+                    class="pbs-section-tab-item"
+                  >
+                    <button
+                      class="tab"
+                      :class="{ active: activeSectionId === section.sectionId }"
+                      @click="activeSectionId = section.sectionId"
+                    >
+                      {{ section.sectionTitle || `영역 ${idx + 1}` }}
+                    </button>
+                    <button
+                      class="pbs-section-delete-btn"
+                      @click.stop="handleDeleteSection(section)"
+                      title="영역 삭제"
+                    >
+                      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <!-- + 영역 추가 버튼 -->
+                <button class="pbs-section-add-btn" @click="handleCreateSection" title="영역 추가">
+                  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
               </div>
             </div>
-            <input
-              class="pbs-page-title-edit"
-              type="text"
-              v-model="currentPage.title"
-              placeholder="제목을 입력하세요"
-              @input="onContentInput"
-            >
-          </div>
-
-          <!-- Content -->
-          <div class="pbs-content-card">
-            <div class="pbs-content-card-header">
-              <div class="pbs-content-card-icon">✎</div>
-              <div>
-                <div class="pbs-content-card-title">내용</div>
-                <div class="pbs-content-card-subtitle">입력하는 즉시 자동 저장됩니다</div>
+            <div class="card-body pbs-section-card-body">
+              <!-- 섹션이 없을 때 -->
+              <div v-if="sections.length === 0" class="pbs-section-empty">
+                영역이 없습니다. + 버튼으로 새 영역을 추가하세요.
               </div>
+              <!-- 현재 섹션의 RichTextEditor -->
+              <template v-else-if="activeSection">
+                <div class="pbs-section-title-row">
+                  <input
+                    class="pbs-section-title-edit"
+                    type="text"
+                    v-model="activeSection.sectionTitle"
+                    placeholder="영역 제목 (예: 관찰, 해석, 적용)"
+                    @input="onSectionTitleInput(activeSection)"
+                  >
+                </div>
+                <div class="content-editor pbs-content-editor">
+                  <RichTextEditor
+                    :model-value="activeSection.content"
+                    @update:model-value="(val: string) => onSectionContentInput(activeSection, val)"
+                  />
+                </div>
+              </template>
             </div>
-            <div class="pbs-content-card-body">
-              <textarea
-                class="pbs-content-textarea"
-                v-model="currentPage.content"
-                placeholder="내용을 자유롭게 작성하세요."
-                @input="onContentInput"
-              ></textarea>
-            </div>
-          </div>
+          </section>
         </div>
       </div>
 
@@ -189,13 +234,24 @@
 
 <script setup lang="ts">
 import '@/assets/css/pbs-list.css'
+import '@/assets/css/rich-text-editor.css'
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { pbsApi, bibleApi } from '@/api'
 import { useToast } from '@/composables/useToast'
+import RichTextEditor from '@/components/RichTextEditor.vue'
 
 const { showToast } = useToast()
 
 // ── Types ──
+interface PbsSection {
+  sectionId: number
+  pageId: number
+  sectionTitle: string
+  content: string
+  sortOrder: number
+  createdAt?: string
+  updatedAt?: string
+}
 interface PbsPage {
   pageId: number
   folderId: number
@@ -208,6 +264,7 @@ interface PbsPage {
   verseFrom?: number
   chapterTo?: number
   verseTo?: number
+  sections?: PbsSection[]
 }
 interface PbsFolder {
   folderId: number
@@ -231,6 +288,14 @@ const selectedPageId = ref<number | null>(null)
 const currentPage = ref<PbsPage | null>(null)
 const treeSearch = ref('')
 const saveStatus = ref<'idle' | 'saving' | 'saved'>('idle')
+
+// Section state
+const sections = ref<PbsSection[]>([])
+const activeSectionId = ref<number | null>(null)
+const activeSection = computed(() => {
+  if (!activeSectionId.value) return null
+  return sections.value.find(s => s.sectionId === activeSectionId.value) || null
+})
 
 // Bible state
 const bible = reactive({
@@ -366,6 +431,9 @@ async function selectPage(pageId: number) {
   try {
     const res = await pbsApi.getPage(pageId)
     currentPage.value = res.data
+    // Load sections from page response (sections array included)
+    sections.value = (res.data.sections || []).sort((a: PbsSection, b: PbsSection) => a.sortOrder - b.sortOrder)
+    activeSectionId.value = sections.value.length > 0 ? sections.value[0].sectionId : null
     // Populate bible selectors from page data
     const p = res.data
     bible.testament = p.testament || ''
@@ -436,27 +504,25 @@ async function handleDeletePage(page: PbsPage, folder: PbsFolder) {
   }
 }
 
-// ── Autosave (debounced) ──
-let autoSaveTimer: ReturnType<typeof setTimeout> | undefined
-let pendingPageUpdate = false
+// ── Autosave: Title (debounced) ──
+let titleSaveTimer: ReturnType<typeof setTimeout> | undefined
+let pendingTitleUpdate = false
 
-function onContentInput() {
+function onTitleInput() {
   if (!currentPage.value) return
   saveStatus.value = 'saving'
-  pendingPageUpdate = true
-  if (autoSaveTimer) clearTimeout(autoSaveTimer)
-  autoSaveTimer = setTimeout(doAutoSave, 800)
+  pendingTitleUpdate = true
+  if (titleSaveTimer) clearTimeout(titleSaveTimer)
+  titleSaveTimer = setTimeout(doTitleSave, 800)
 }
 
-async function doAutoSave() {
-  if (!currentPage.value || !pendingPageUpdate) return
-  pendingPageUpdate = false
+async function doTitleSave() {
+  if (!currentPage.value || !pendingTitleUpdate) return
+  pendingTitleUpdate = false
   try {
-    // Use updatePage (full update) to ensure both title and content are saved
-    // The /content endpoint only saves content, not title
     await pbsApi.updatePage(currentPage.value.pageId, {
       title: currentPage.value.title,
-      content: currentPage.value.content,
+      content: currentPage.value.content || '',
       testament: currentPage.value.testament || undefined,
       bookCode: currentPage.value.bookCode || undefined,
       chapterFrom: currentPage.value.chapterFrom,
@@ -465,22 +531,108 @@ async function doAutoSave() {
       verseTo: currentPage.value.verseTo,
     })
     saveStatus.value = 'saved'
-    // Update tree title
     updateTreePageTitle(currentPage.value.pageId, currentPage.value.title)
   } catch (e) {
-    // Fallback: try updateContent (content-only) if updatePage fails
-    try {
-      await pbsApi.updateContent(currentPage.value.pageId, {
-        title: currentPage.value.title,
-        content: currentPage.value.content,
-      })
-      saveStatus.value = 'saved'
-      updateTreePageTitle(currentPage.value.pageId, currentPage.value.title)
-    } catch (e2) {
-      console.error('자동저장 실패:', e2)
-      saveStatus.value = 'idle'
-      showToast('자동저장 중 오류가 발생했습니다.')
+    console.error('제목 자동저장 실패:', e)
+    saveStatus.value = 'idle'
+    showToast('자동저장 중 오류가 발생했습니다.')
+  }
+}
+
+// ── Autosave: Section content (debounced per-section) ──
+const sectionContentTimers = new Map<number, ReturnType<typeof setTimeout>>()
+const sectionContentPending = new Map<number, boolean>()
+
+function onSectionContentInput(section: PbsSection, val: string) {
+  section.content = val
+  saveStatus.value = 'saving'
+  sectionContentPending.set(section.sectionId, true)
+  const existing = sectionContentTimers.get(section.sectionId)
+  if (existing) clearTimeout(existing)
+  sectionContentTimers.set(section.sectionId, setTimeout(() => doSectionContentSave(section.sectionId), 800))
+}
+
+async function doSectionContentSave(sectionId: number) {
+  if (!sectionContentPending.get(sectionId)) return
+  sectionContentPending.set(sectionId, false)
+  const section = sections.value.find(s => s.sectionId === sectionId)
+  if (!section) return
+  try {
+    await pbsApi.updateSectionContent(sectionId, { content: section.content })
+    saveStatus.value = 'saved'
+  } catch (e) {
+    console.error('섹션 내용 자동저장 실패:', e)
+    saveStatus.value = 'idle'
+    showToast('영역 내용 자동저장 중 오류가 발생했습니다.')
+  }
+}
+
+// ── Autosave: Section title (debounced per-section) ──
+const sectionTitleTimers = new Map<number, ReturnType<typeof setTimeout>>()
+const sectionTitlePending = new Map<number, boolean>()
+
+function onSectionTitleInput(section: PbsSection) {
+  saveStatus.value = 'saving'
+  sectionTitlePending.set(section.sectionId, true)
+  const existing = sectionTitleTimers.get(section.sectionId)
+  if (existing) clearTimeout(existing)
+  sectionTitleTimers.set(section.sectionId, setTimeout(() => doSectionTitleSave(section.sectionId), 800))
+}
+
+async function doSectionTitleSave(sectionId: number) {
+  if (!sectionTitlePending.get(sectionId)) return
+  sectionTitlePending.set(sectionId, false)
+  const section = sections.value.find(s => s.sectionId === sectionId)
+  if (!section) return
+  try {
+    await pbsApi.updateSection(sectionId, { sectionTitle: section.sectionTitle })
+    saveStatus.value = 'saved'
+  } catch (e) {
+    console.error('섹션 제목 자동저장 실패:', e)
+    saveStatus.value = 'idle'
+  }
+}
+
+// ── Section CRUD ──
+async function handleCreateSection() {
+  if (!currentPage.value) return
+  try {
+    const sortOrder = sections.value.length
+    const res = await pbsApi.createSection(currentPage.value.pageId, {
+      sectionTitle: `영역 ${sortOrder + 1}`,
+      content: '',
+      sortOrder,
+    })
+    const newSection: PbsSection = res.data
+    sections.value.push(newSection)
+    activeSectionId.value = newSection.sectionId
+    showToast('새 영역이 추가되었습니다.')
+  } catch (e) {
+    console.error('영역 생성 실패:', e)
+    showToast('영역 생성 중 오류가 발생했습니다.')
+  }
+}
+
+async function handleDeleteSection(section: PbsSection) {
+  if (!confirm(`'${section.sectionTitle}' 영역을 삭제하시겠습니까?`)) return
+  try {
+    await pbsApi.deleteSection(section.sectionId)
+    const idx = sections.value.findIndex(s => s.sectionId === section.sectionId)
+    if (idx >= 0) sections.value.splice(idx, 1)
+    // Reorder remaining sections
+    if (sections.value.length > 0) {
+      const orders = sections.value.map((s, i) => ({ sectionId: s.sectionId, sortOrder: i }))
+      try { await pbsApi.reorderSections(currentPage.value!.pageId, orders) } catch {}
+      sections.value.forEach((s, i) => { s.sortOrder = i })
     }
+    // Update active section
+    if (activeSectionId.value === section.sectionId) {
+      activeSectionId.value = sections.value.length > 0 ? sections.value[0].sectionId : null
+    }
+    showToast('영역이 삭제되었습니다.')
+  } catch (e) {
+    console.error('영역 삭제 실패:', e)
+    showToast('영역 삭제 중 오류가 발생했습니다.')
   }
 }
 
@@ -495,9 +647,14 @@ function updateTreePageTitle(pageId: number, title: string) {
 async function handlePublish() {
   if (!currentPage.value) return
   if (currentPage.value.status === 'PUBLISHED') return
-  // Save pending changes first
-  if (autoSaveTimer) clearTimeout(autoSaveTimer)
-  if (pendingPageUpdate) await doAutoSave()
+  // Save pending title changes first
+  if (titleSaveTimer) clearTimeout(titleSaveTimer)
+  if (pendingTitleUpdate) await doTitleSave()
+  // Save pending section content changes
+  for (const [sectionId, timer] of sectionContentTimers) {
+    clearTimeout(timer)
+    if (sectionContentPending.get(sectionId)) await doSectionContentSave(sectionId)
+  }
   if (!confirm('페이지를 배포하시겠습니까?')) return
   try {
     await pbsApi.publishPage(currentPage.value.pageId)
@@ -619,7 +776,7 @@ function saveBibleMeta() {
     try {
       await pbsApi.updatePage(currentPage.value.pageId, {
         title: currentPage.value.title,
-        content: currentPage.value.content,
+        content: currentPage.value.content || '',
         testament: bible.testament || undefined,
         bookCode: bible.bookCode || undefined,
         chapterFrom: bible.chapterFrom ? Number(bible.chapterFrom) : undefined,
