@@ -78,10 +78,13 @@ import { watch, onBeforeUnmount, ref } from 'vue'
 import { fileApi } from '@/api'
 import HandwritingPad from '@/components/HandwritingPad.vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: string
   editable?: boolean
-}>()
+}>(), {
+  // prop을 전달하지 않는 화면(설교/QT/독서)은 기본 편집 가능
+  editable: true,
+})
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
