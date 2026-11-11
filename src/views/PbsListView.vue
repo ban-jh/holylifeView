@@ -316,6 +316,7 @@ const selectedPageId = ref<number | null>(null)
 const currentPage = ref<PbsPage | null>(null)
 const treeSearch = ref('')
 const saveStatus = ref<'idle' | 'saving' | 'saved'>('idle')
+const lastClickedFolderId = ref<number | null>(null)
 
 // Section state
 const sections = ref<PbsSection[]>([])
@@ -483,13 +484,16 @@ async function selectPage(pageId: number) {
 }
 
 async function handleCreatePage() {
-  // Find target folder — prefer expanded/active folder, else first folder
+  // Target folder priority: last clicked folder > first expanded folder > first folder
   let targetFolderId: number | null = null
-  // Check if any folder is expanded; use the first expanded one
-  for (const f of folders.value) {
-    if (expandedFolders.value.has(f.folderId)) {
-      targetFolderId = f.folderId
-      break
+  if (lastClickedFolderId.value !== null) {
+    targetFolderId = lastClickedFolderId.value
+  } else {
+    for (const f of folders.value) {
+      if (expandedFolders.value.has(f.folderId)) {
+        targetFolderId = f.folderId
+        break
+      }
     }
   }
   if (targetFolderId === null && folders.value.length > 0) {
@@ -697,6 +701,7 @@ async function handlePublish() {
 
 // ── Tree interactions ──
 function toggleFolder(folderId: number) {
+  lastClickedFolderId.value = folderId
   if (expandedFolders.value.has(folderId)) {
     expandedFolders.value.delete(folderId)
   } else {
