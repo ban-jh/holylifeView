@@ -409,12 +409,12 @@
   font-size: 20px; font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.5px; line-height: 1.25;
-  border: none; border-bottom: 2px solid var(--accent);
+  border: none;
   background: transparent; outline: none;
   padding: 2px 0;
   font-family: inherit;
 }
-.pbs-page-title-edit:focus { border-bottom: 2px solid var(--accent); }
+.pbs-page-title-edit:focus { outline: none; border: none; box-shadow: none; }
 
 /* ── Section card (영역별 페이징) ── */
 .pbs-page-card {
@@ -425,7 +425,19 @@
   margin-bottom: 0;
 }
 .pbs-page-card-header { padding: 14px 18px 12px; }
-.pbs-title-body { padding: 14px 18px 12px; }
+/* 제목: 카드 폭 전체에 걸친 일직선 구분선 */
+.pbs-title-body {
+  padding: 12px 18px 14px;
+  border-bottom: 1px solid var(--sand);
+}
+.pbs-page-editor-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px 18px;
+  overflow-y: auto;
+}
 
 .pbs-section-header {
   display: flex;

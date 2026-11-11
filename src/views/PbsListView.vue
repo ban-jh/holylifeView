@@ -261,64 +261,12 @@
               >
             </div>
 
-            <!-- 영역별 탭 -->
-            <div class="pbs-section-header">
-              <div class="card-title">영역별 내용</div>
-              <div class="pbs-section-tabs-wrap">
-                <!-- 섹션이 2개 이상이면 탭 표시 -->
-                <div v-if="sections.length > 1" class="tabs pbs-section-tabs">
-                  <div
-                    v-for="(section, idx) in sections"
-                    :key="section.sectionId"
-                    class="pbs-section-tab-item"
-                  >
-                    <button
-                      class="tab"
-                      :class="{ active: activeSectionId === section.sectionId }"
-                      @click="activeSectionId = section.sectionId"
-                    >
-                      {{ section.sectionTitle || `영역 ${idx + 1}` }}
-                    </button>
-                    <button
-                      class="pbs-section-delete-btn"
-                      @click.stop="handleDeleteSection(section)"
-                      title="영역 삭제"
-                    >
-                      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                  </div>
-                </div>
-                <!-- + 영역 추가 버튼 -->
-                <button class="pbs-section-add-btn" @click="handleCreateSection" title="영역 추가">
-                  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- 영역 내용 -->
-            <div class="pbs-section-card-body">
-              <!-- 섹션이 없을 때 -->
-              <div v-if="sections.length === 0" class="pbs-section-empty">
-                영역이 없습니다. + 버튼으로 새 영역을 추가하세요.
-              </div>
-              <!-- 현재 섹션의 RichTextEditor -->
-              <template v-else-if="activeSection">
-                <div class="pbs-section-title-row">
-                  <input
-                    class="pbs-section-title-edit"
-                    type="text"
-                    v-model="activeSection.sectionTitle"
-                    placeholder="영역 제목 (예: 관찰, 해석, 적용)"
-                    @input="onSectionTitleInput(activeSection)"
-                  >
-                </div>
-                <div class="content-editor pbs-content-editor">
-                  <RichTextEditor
-                    :model-value="activeSection.content"
-                    @update:model-value="(val: string) => onSectionContentInput(activeSection, val)"
-                  />
-                </div>
-              </template>
+            <!-- 내용 (바로 입력) -->
+            <div class="pbs-page-editor-body">
+              <RichTextEditor
+                :model-value="currentPage.content || ''"
+                @update:model-value="onContentInput"
+              />
             </div>
           </section>
         </div>
@@ -739,6 +687,41 @@ async function doTitleSave() {
     updateTreePageTitle(currentPage.value.pageId, currentPage.value.title)
   } catch (e) {
     console.error('제목 자동저장 실패:', e)
+    saveStatus.value = 'idle'
+    showToast('자동저장 중 오류가 발생했습니다.')
+  }
+}
+
+// ── Autosave: Content (debounced) ──
+let contentSaveTimer: ReturnType<typeof setTimeout> | undefined
+let pendingContentUpdate = false
+
+function onContentInput(val: string) {
+  if (!currentPage.value) return
+  currentPage.value.content = val
+  saveStatus.value = 'saving'
+  pendingContentUpdate = true
+  if (contentSaveTimer) clearTimeout(contentSaveTimer)
+  contentSaveTimer = setTimeout(doContentSave, 800)
+}
+
+async function doContentSave() {
+  if (!currentPage.value || !pendingContentUpdate) return
+  pendingContentUpdate = false
+  try {
+    await pbsApi.updatePage(currentPage.value.pageId, {
+      title: currentPage.value.title,
+      content: currentPage.value.content || '',
+      testament: currentPage.value.testament || undefined,
+      bookCode: currentPage.value.bookCode || undefined,
+      chapterFrom: currentPage.value.chapterFrom,
+      verseFrom: currentPage.value.verseFrom,
+      chapterTo: currentPage.value.chapterTo,
+      verseTo: currentPage.value.verseTo,
+    })
+    saveStatus.value = 'saved'
+  } catch (e) {
+    console.error('내용 자동저장 실패:', e)
     saveStatus.value = 'idle'
     showToast('자동저장 중 오류가 발생했습니다.')
   }
