@@ -44,8 +44,14 @@
               >
                 <div
                   class="pbs-tree-row"
-                  :class="{ 'parent-active': isFolderActive(folder) }"
+                  :class="{ 'parent-active': isFolderActive(folder), 'dragging': dragData?.type === 'folder' && dragData?.id === folder.folderId, 'drag-over': dragOverId === `folder-${folder.folderId}` }"
+                  draggable="true"
                   @click="toggleFolder(folder.folderId)"
+                  @dragstart="onDragStart($event, 'folder', folder.folderId)"
+                  @dragover="onDragOver($event, 'folder', folder.folderId)"
+                  @dragleave="onDragLeave"
+                  @dragend="onDragEnd"
+                  @drop="onDrop($event, 'folder', folder.folderId)"
                 >
                   <svg class="pbs-tree-chevron" :class="{ open: expandedFolders.has(folder.folderId) }" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
                   <svg class="pbs-tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -64,6 +70,13 @@
                     v-for="page in folder.pages"
                     :key="page.pageId"
                     class="pbs-tree-sub-item-wrapper"
+                    :class="{ 'dragging': dragData?.type === 'page' && dragData?.id === page.pageId, 'drag-over': dragOverId === `page-${page.pageId}` }"
+                    draggable="true"
+                    @dragstart="onDragStart($event, 'page', page.pageId, folder.folderId)"
+                    @dragover="onDragOver($event, 'page', page.pageId, folder.folderId)"
+                    @dragleave="onDragLeave"
+                    @dragend="onDragEnd"
+                    @drop="onDrop($event, 'page', page.pageId, folder.folderId)"
                   >
                     <div
                       class="pbs-tree-sub-item"
@@ -694,6 +707,130 @@ function toggleFolder(folderId: number) {
 function isFolderActive(folder: PbsFolder): boolean {
   return expandedFolders.value.has(folder.folderId) ||
     (folder.pages?.some(p => p.pageId === selectedPageId.value) ?? false)
+}
+
+// ── Drag and Drop ──
+interface DragItem {
+  type: 'folder' | 'page'
+  id: number
+  folderId?: number  // for pages: source folder
+}
+const dragData = ref<DragItem | null>(null)
+const dragOverId = ref<string | null>(null)
+
+function onDragStart(e: DragEvent, type: 'folder' | 'page', id: number, folderId?: number) {
+  dragData.value = { type, id, folderId }
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', `${type}:${id}`)
+  }
+}
+
+function onDragOver(e: DragEvent, type: 'folder' | 'page', id: number, folderId?: number) {
+  if (!dragData.value) return
+  // Only allow same-type drag
+  if (dragData.value.type !== type) return
+  // Don't allow dropping on self
+  if (dragData.value.id === id) return
+  e.preventDefault()
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+  dragOverId.value = `${type}-${id}`
+}
+
+function onDragLeave() {
+  dragOverId.value = null
+}
+
+function onDragEnd() {
+  dragData.value = null
+  dragOverId.value = null
+}
+
+async function onDrop(e: DragEvent, type: 'folder' | 'page', targetId: number, targetFolderId?: number) {
+  e.preventDefault()
+  e.stopPropagation()
+  if (!dragData.value) return
+  const item = dragData.value
+  dragData.value = null
+  dragOverId.value = null
+
+  if (item.type !== type) return
+  if (item.id === targetId) return
+
+  if (type === 'folder') {
+    await reorderFolders(item.id, targetId)
+  } else {
+    await reorderPages(item.id, item.folderId, targetId, targetFolderId)
+  }
+}
+
+async function reorderFolders(draggedId: number, targetId: number) {
+  const list = [...folders.value]
+  const fromIdx = list.findIndex(f => f.folderId === draggedId)
+  const toIdx = list.findIndex(f => f.folderId === targetId)
+  if (fromIdx < 0 || toIdx < 0) return
+  // Remove dragged item and insert before target
+  const [moved] = list.splice(fromIdx, 1)
+  list.splice(toIdx, 0, moved)
+  // Update sortOrder and local array
+  const reorderItems = list.map((f, i) => ({ folderId: f.folderId, sortOrder: i }))
+  folders.value = list
+  try {
+    await pbsApi.reorderFolders(reorderItems)
+  } catch (e) {
+    console.error('폴더 순서 변경 실패:', e)
+    showToast('폴더 순서 변경 중 오류가 발생했습니다.')
+    await fetchFolders()
+  }
+}
+
+async function reorderPages(draggedPageId: number, sourceFolderId: number | undefined, targetPageId: number, targetFolderId: number | undefined) {
+  if (!sourceFolderId || !targetFolderId) return
+  // Same folder reorder
+  if (sourceFolderId === targetFolderId) {
+    const folder = folders.value.find(f => f.folderId === sourceFolderId)
+    if (!folder || !folder.pages) return
+    const pages = [...folder.pages]
+    const fromIdx = pages.findIndex(p => p.pageId === draggedPageId)
+    const toIdx = pages.findIndex(p => p.pageId === targetPageId)
+    if (fromIdx < 0 || toIdx < 0) return
+    const [moved] = pages.splice(fromIdx, 1)
+    pages.splice(toIdx, 0, moved)
+    folder.pages = pages
+    const reorderItems = pages.map((p, i) => ({ pageId: p.pageId, sortOrder: i }))
+    try {
+      await pbsApi.reorderPages(reorderItems)
+    } catch (e) {
+      console.error('페이지 순서 변경 실패:', e)
+      showToast('페이지 순서 변경 중 오류가 발생했습니다.')
+      await fetchFolders()
+    }
+  } else {
+    // Cross-folder move
+    const srcFolder = folders.value.find(f => f.folderId === sourceFolderId)
+    const tgtFolder = folders.value.find(f => f.folderId === targetFolderId)
+    if (!srcFolder || !tgtFolder || !srcFolder.pages || !tgtFolder.pages) return
+    const fromIdx = srcFolder.pages.findIndex(p => p.pageId === draggedPageId)
+    const toIdx = tgtFolder.pages.findIndex(p => p.pageId === targetPageId)
+    if (fromIdx < 0 || toIdx < 0) return
+    const [moved] = srcFolder.pages.splice(fromIdx, 1)
+    moved.folderId = targetFolderId
+    tgtFolder.pages.splice(toIdx, 0, moved)
+    // Reorder source folder
+    const srcReorder = srcFolder.pages.map((p, i) => ({ pageId: p.pageId, sortOrder: i, folderId: sourceFolderId }))
+    // Reorder target folder (with moved page)
+    const tgtReorder = tgtFolder.pages.map((p, i) => ({ pageId: p.pageId, sortOrder: i, folderId: targetFolderId }))
+    // Expand target folder
+    expandedFolders.value.add(targetFolderId)
+    try {
+      // Send all pages that need reordering
+      await pbsApi.reorderPages([...tgtReorder, ...srcReorder])
+    } catch (e) {
+      console.error('페이지 이동 실패:', e)
+      showToast('페이지 이동 중 오류가 발생했습니다.')
+      await fetchFolders()
+    }
+  }
 }
 
 // ── Bible selectors ──

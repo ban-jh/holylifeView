@@ -95,6 +95,7 @@ export const pbsApi = {
   createFolder: (data: { folderName: string; parentId?: number }) => api.post('/pbs/folders', data),
   updateFolder: (id: number, data: { folderName?: string; sortOrder?: number }) => api.put(`/pbs/folders/${id}`, data),
   deleteFolder: (id: number) => api.delete(`/pbs/folders/${id}`),
+  reorderFolders: (items: { folderId: number; sortOrder: number }[]) => api.put('/pbs/folders/reorder', items),
 
   // Pages
   getPage: (id: number) => api.get(`/pbs/pages/${id}`),
@@ -103,6 +104,7 @@ export const pbsApi = {
   publishPage: (id: number) => api.put(`/pbs/pages/${id}/publish`),
   updatePage: (id: number, data: { title: string; content: string; testament?: string; bookCode?: string; chapterFrom?: number; verseFrom?: number; chapterTo?: number; verseTo?: number }) => api.put(`/pbs/pages/${id}`, data),
   deletePage: (id: number) => api.delete(`/pbs/pages/${id}`),
+  reorderPages: (items: { pageId: number; sortOrder: number; folderId?: number }[]) => api.put('/pbs/pages/reorder', items),
 
   // Sections (영역별 페이징)
   getSections: (pageId: number) => api.get(`/pbs/pages/${pageId}/sections`),

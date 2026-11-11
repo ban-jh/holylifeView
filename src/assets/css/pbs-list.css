@@ -144,9 +144,13 @@
   cursor: pointer;
   transition: background var(--transition), color var(--transition);
   user-select: none;
+  background: transparent;
 }
 .pbs-tree-row:hover { background: var(--cream-dark); color: var(--text-primary); }
 .pbs-tree-row.parent-active { background: rgba(201,125,78,0.12); color: var(--accent-hover); font-weight: 600; }
+.pbs-tree-row.parent-active:hover { background: rgba(201,125,78,0.18); }
+.pbs-tree-row.dragging { opacity: 0.5; }
+.pbs-tree-row.drag-over { border-top: 2px solid var(--accent); }
 
 .pbs-tree-chevron {
   width: 13px; height: 13px;
@@ -193,8 +197,13 @@
   padding: 3px 8px 3px 28px;
   border-radius: var(--radius-sm);
   transition: background var(--transition);
+  background: transparent;
 }
 .pbs-tree-sub-item-wrapper:hover { background: var(--cream-dark); }
+.pbs-tree-sub-item-wrapper.dragging { opacity: 0.5; }
+.pbs-tree-sub-item-wrapper.drag-over { border-top: 2px solid var(--accent); }
+.pbs-tree-sub-item-wrapper:has(.pbs-tree-sub-item.active) { background: var(--accent-light); }
+.pbs-tree-sub-item-wrapper:has(.pbs-tree-sub-item.active):hover { background: var(--accent-light); }
 .pbs-tree-sub-item {
   flex: 1;
   display: flex; align-items: center; gap: 7px;
