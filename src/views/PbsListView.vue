@@ -242,11 +242,18 @@
                 </span>
               </div>
               <button
+                v-if="currentPage.status === 'PUBLISHED' && !editMode"
+                class="pbs-btn-edit"
+                @click="enterEditMode"
+              >
+                수정
+              </button>
+              <button
+                v-else
                 class="pbs-btn-publish"
                 @click="handlePublish"
-                :disabled="currentPage.status === 'PUBLISHED'"
               >
-                {{ currentPage.status === 'PUBLISHED' ? '배포됨' : '배포' }}
+                배포
               </button>
             </div>
 
@@ -254,9 +261,11 @@
             <div class="card-body pbs-title-body">
               <input
                 class="pbs-page-title-edit"
+                :class="{ readonly: !editMode }"
                 type="text"
                 v-model="currentPage.title"
                 placeholder="제목을 입력하세요"
+                :readonly="!editMode"
                 @input="onTitleInput"
               >
             </div>
@@ -265,7 +274,8 @@
             <div class="pbs-page-editor-body">
               <RichTextEditor
                 :model-value="currentPage.content || ''"
-                @update:model-value="onContentInput"
+                :editable="editMode"
+                @update:model-value="onEditorUpdate"
               />
             </div>
           </section>
@@ -332,6 +342,7 @@ const selectedPageId = ref<number | null>(null)
 const currentPage = ref<PbsPage | null>(null)
 const treeSearch = ref('')
 const saveStatus = ref<'idle' | 'saving' | 'saved'>('idle')
+const editMode = ref(true)
 const lastClickedFolderId = ref<number | null>(null)
 const focusedFolderId = ref<number | null>(null)
 
@@ -427,7 +438,7 @@ const bibleTextHtml = computed(() => {
 
 const statusLabel = computed(() => {
   if (saveStatus.value === 'saving') return '저장 중...'
-  if (currentPage.value?.status === 'PUBLISHED') return '배포됨'
+  if (currentPage.value?.status === 'PUBLISHED') return editMode.value ? '수정 중' : '배포됨'
   return '임시저장'
 })
 
@@ -593,6 +604,8 @@ async function selectPage(pageId: number, folderId?: number) {
     bible.chapterTo = p.chapterTo || ''
     bible.verseTo = p.verseTo || ''
     saveStatus.value = 'idle'
+    // 배포된 페이지는 읽기 모드, 임시저장 페이지는 편집 모드
+    editMode.value = p.status !== 'PUBLISHED'
     // Fetch verse lists if book/chapter are set
     if (bible.bookCode && bible.chapterFrom) {
       await loadVerseLists()
@@ -834,25 +847,40 @@ function updateTreePageTitle(pageId: number, title: string) {
 // ── Publish ──
 async function handlePublish() {
   if (!currentPage.value) return
-  if (currentPage.value.status === 'PUBLISHED') return
-  // Save pending title changes first
+  // 대기 중인 제목/내용 변경분 저장
   if (titleSaveTimer) clearTimeout(titleSaveTimer)
   if (pendingTitleUpdate) await doTitleSave()
-  // Save pending section content changes
-  for (const [sectionId, timer] of sectionContentTimers) {
-    clearTimeout(timer)
-    if (sectionContentPending.get(sectionId)) await doSectionContentSave(sectionId)
-  }
-  if (!confirm('페이지를 배포하시겠습니까?')) return
+  if (contentSaveTimer) clearTimeout(contentSaveTimer)
+  if (pendingContentUpdate) await doContentSave()
+
+  const isRepublish = currentPage.value.status === 'PUBLISHED'
+  if (!confirm(isRepublish ? '수정한 내용을 배포하시겠습니까?' : '페이지를 배포하시겠습니까?')) return
   try {
     await pbsApi.publishPage(currentPage.value.pageId)
     currentPage.value.status = 'PUBLISHED'
-    showToast('페이지가 배포되었습니다.')
+    editMode.value = false
+    showToast(isRepublish ? '수정 내용이 배포되었습니다.' : '페이지가 배포되었습니다.')
     await fetchFolders()
   } catch (e) {
     console.error('배포 실패:', e)
     showToast('배포 중 오류가 발생했습니다.')
   }
+}
+
+// 배포된 페이지에서 '수정' 클릭 → 편집 모드 전환 (버튼이 '배포'로 바뀜)
+function enterEditMode() {
+  editMode.value = true
+  nextTick(() => {
+    const el = document.querySelector('.pbs-page-title-edit') as HTMLInputElement | null
+    if (el) el.focus()
+  })
+  showToast('수정 모드입니다. 수정 후 배포 버튼을 눌러주세요.')
+}
+
+// 읽기 모드에서는 에디터 변경을 저장하지 않음
+function onEditorUpdate(val: string) {
+  if (!editMode.value) return
+  onContentInput(val)
 }
 
 // ── Tree interactions ──

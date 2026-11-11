@@ -1,7 +1,7 @@
 <template>
-  <div class="tiptap-editor">
+  <div class="tiptap-editor" :class="{ 'tiptap-readonly': editable === false }">
     <!-- 툴바 -->
-    <div class="tiptap-toolbar" v-if="editor">
+    <div class="tiptap-toolbar" v-if="editor && editable !== false">
       <!-- 글꼴 선택 -->
       <select class="tiptap-select" @change="onFontFamilyChange" title="글꼴">
         <option value="">글꼴</option>
@@ -69,6 +69,7 @@ import HandwritingPad from '@/components/HandwritingPad.vue'
 
 const props = defineProps<{
   modelValue: string
+  editable?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -98,6 +99,7 @@ const fontSizes = ['10px', '11px', '12px', '13px', '14px', '15px', '16px', '18px
 
 const editor = useEditor({
   content: props.modelValue || '',
+  editable: props.editable !== false,
   extensions: [
     StarterKit,
     Link.configure({ openOnClick: false }),
@@ -122,6 +124,14 @@ watch(
     if (editor.value && val !== editor.value.getHTML()) {
       editor.value.commands.setContent(val || '', false)
     }
+  }
+)
+
+// 읽기 전용 모드 전환
+watch(
+  () => props.editable,
+  (val) => {
+    if (editor.value) editor.value.setEditable(val !== false)
   }
 )
 

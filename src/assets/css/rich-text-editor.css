@@ -217,3 +217,13 @@
 .tiptap-content .tiptap[style*="text-align: right"] {
   text-align: right;
 }
+/* ── 읽기 전용 모드 (배포된 페이지) ── */
+.tiptap-readonly {
+  border-color: transparent;
+  background: transparent;
+}
+.tiptap-readonly .ProseMirror {
+  padding: 4px 2px;
+  cursor: default;
+  min-height: 200px;
+}
