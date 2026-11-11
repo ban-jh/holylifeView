@@ -13,8 +13,8 @@
         <div class="form-group"><label>날짜</label><input type="date" v-model="form.date" /></div>
       </div>
 
-      <!-- 성경 구절 선택 — 항상 표시, 직접 입력 모드만 수정 가능 -->
-      <div class="basic-info-qt-full" style="margin-top: 20px;">
+      <!-- 성경 구절 + 공개여부 (한 줄) -->
+      <div class="qt-bible-visibility-row">
         <div class="form-group form-bible">
           <label>성경 구절</label>
           <div class="bible-select-row">
@@ -46,11 +46,10 @@
             </select>
           </div>
         </div>
-      </div>
 
-      <div style="margin-top: 20px;">
-        <div class="form-group">
-          <label style="margin-bottom: 8px;">공개여부</label>
+        <!-- 공개 여부 -->
+        <div class="form-group form-visibility">
+          <label>공개여부</label>
           <div class="visibility-toggle">
             <div class="visibility-option" :class="{ selected: form.visibility === 'public' }" @click="form.visibility = 'public'">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
