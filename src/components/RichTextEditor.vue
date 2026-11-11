@@ -50,6 +50,16 @@
     <!-- 에디터 본문 -->
     <EditorContent :editor="editor" class="tiptap-content" />
 
+    <!-- 이미지 선택 (내 PC) -->
+    <input
+      ref="imageInput"
+      type="file"
+      accept="image/*"
+      multiple
+      style="display: none"
+      @change="onImagePicked"
+    />
+
     <!-- 손글씨 필기 패드 -->
     <HandwritingPad ref="handwritingPad" @insert="insertHandwriting" />
   </div>
@@ -65,6 +75,7 @@ import Image from '@tiptap/extension-image'
 import { TextStyle, FontFamily, FontSize, Color } from '@tiptap/extension-text-style'
 import Highlight from '@tiptap/extension-highlight'
 import { watch, onBeforeUnmount, ref } from 'vue'
+import { fileApi } from '@/api'
 import HandwritingPad from '@/components/HandwritingPad.vue'
 
 const props = defineProps<{
@@ -97,9 +108,65 @@ const fontFamilies = [
 // 글자 크기 옵션
 const fontSizes = ['10px', '11px', '12px', '13px', '14px', '15px', '16px', '18px', '20px', '22px', '24px', '28px', '32px', '36px', '40px', '48px']
 
+// ── 이미지 업로드 / 붙여넣기 ──
+const imageInput = ref<HTMLInputElement | null>(null)
+const uploadingImage = ref(false)
+
+async function uploadAndInsertImage(file: File) {
+  if (!file || !file.type.startsWith('image/')) return
+  try {
+    uploadingImage.value = true
+    const res = await fileApi.upload(file, 'pbs')
+    const url = res.data?.url
+    if (url) {
+      editor.value?.chain().focus().setImage({ src: url }).run()
+    }
+  } catch (e) {
+    console.error('이미지 업로드 실패:', e)
+    window.alert('이미지 업로드에 실패했습니다.')
+  } finally {
+    uploadingImage.value = false
+  }
+}
+
+function onImagePicked(e: Event) {
+  const input = e.target as HTMLInputElement
+  const files = input.files ? Array.from(input.files) : []
+  files.forEach(uploadAndInsertImage)
+  input.value = ''
+}
+
 const editor = useEditor({
   content: props.modelValue || '',
   editable: props.editable !== false,
+  editorProps: {
+    // 클립보드 이미지 붙여넣기
+    handlePaste(view, event) {
+      const items = event.clipboardData?.items
+      if (!items) return false
+      let handled = false
+      for (const item of Array.from(items)) {
+        if (item.type && item.type.startsWith('image/')) {
+          const file = item.getAsFile()
+          if (file) {
+            uploadAndInsertImage(file)
+            handled = true
+          }
+        }
+      }
+      return handled   // true면 기본 붙여넣기(텍스트) 차단
+    },
+    // 드래그 앤 드롭 이미지
+    handleDrop(view, event, _slice, moved) {
+      if (moved) return false
+      const files = event.dataTransfer?.files
+      if (!files || files.length === 0) return false
+      const images = Array.from(files).filter(f => f.type.startsWith('image/'))
+      if (images.length === 0) return false
+      images.forEach(uploadAndInsertImage)
+      return true
+    },
+  },
   extensions: [
     StarterKit,
     Link.configure({ openOnClick: false }),
@@ -299,14 +366,11 @@ const toolbarButtons = ref([
     },
   },
   {
-    title: '이미지',
+    title: '이미지 (내 PC에서 추가)',
     label: '🖼',
     icon: '',
     action: () => {
-      const url = window.prompt('이미지 URL 입력')
-      if (url) {
-        editor.value?.chain().focus().setImage({ src: url }).run()
-      }
+      imageInput.value?.click()
     },
   },
   { title: '실행 취소', label: '↶', icon: '', action: () => editor.value?.chain().focus().undo().run() },
