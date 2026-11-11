@@ -1,131 +1,664 @@
 <template>
-  <div class="page-header-row">
-    <div>
-      <div class="page-title">성경 콘텐츠 목록</div>
-      <div class="page-desc">등록된 성경 공부 및 묵상 콘텐츠 목록을 관리합니다.</div>
-    </div>
-    <RouterLink to="/pbs/new" class="btn btn-primary">
-      <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <line x1="5" y1="12" x2="19" y2="12" />
-      </svg>
-      새 콘텐츠 작성
-    </RouterLink>
-  </div>
+  <div class="pbs-page" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+    <div class="pbs-split-area">
 
-  <div class="card">
-    <div class="filter-bar">
-      <div class="filter-group">
-        <select v-model="filterBook" style="min-width: 120px">
-          <option value="">전체 성경</option>
-          <option value="창세기">창세기</option>
-          <option value="출애굽기">출애굽기</option>
-          <option value="마태복음">마태복음</option>
-          <option value="요한복음">요한복음</option>
-        </select>
-        <select v-model="filterStatus" style="min-width: 110px">
-          <option value="">전체 상태</option>
-          <option value="published">게시됨</option>
-          <option value="draft">임시저장</option>
-        </select>
-      </div>
-      <div class="filter-group" style="flex: 1">
-        <input type="text" v-model="searchText" placeholder="제목 또는 묵상 내용 검색..." style="width: 100%" />
-      </div>
-      <div class="filter-group">
-        <button class="btn btn-secondary" @click="fetchPbs">
-          <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>검색
-        </button>
-        <button class="btn btn-secondary" style="padding: 9px 12px" title="초기화" @click="resetFilter">
-          <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
-            <path d="M23 4v6h-6" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="table-responsive">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width: 60px; text-align: center">No.</th>
-            <th style="width: 260px">제목</th>
-            <th>성경 구절</th>
-            <th style="width: 110px">작성자</th>
-            <th style="width: 120px">작성일</th>
-            <th style="width: 100px; text-align: center">상태</th>
-            <th style="width: 90px; text-align: center">관리</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="pb in pbs" :key="pb.id" @click="goToDetail(pb.id)">
-            <td style="text-align: center; color: var(--text-muted)">{{ pb.no }}</td>
-            <td><strong style="color: var(--text-primary)">{{ pb.title }}</strong></td>
-            <td><span class="bible-badge">{{ pb.bibleRef }}</span></td>
-            <td>{{ pb.author }}</td>
-            <td>{{ pb.date }}</td>
-            <td style="text-align: center"><StatusBadge :status="pb.status" /></td>
-            <td style="text-align: center">
-              <button class="btn-icon-only" title="수정" @click.stop="goToDetail(pb.id)">
-                <svg viewBox="0 0 24 24">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
+      <!-- ── Panel 1: Page Tree ── -->
+      <div class="pbs-panel pbs-panel-tree">
+        <div class="pbs-panel-header">
+          <div class="pbs-panel-title">
+            <svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
+            성경공부
+            <button class="pbs-tree-folder-btn" @click="handleCreateFolder" title="폴더 생성">
+              <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+            </button>
+            <button class="pbs-tree-register-btn" @click="handleCreatePage" title="페이지 등록">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="13" x2="12" y2="17"/><line x1="10" y1="15" x2="14" y2="15"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="pbs-tree-search">
+          <div class="pbs-tree-search-box">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" v-model="treeSearch" placeholder="성경공부 검색...">
+          </div>
+        </div>
+        <nav class="pbs-tree-nav">
+          <div v-if="folders.length === 0" class="pbs-tree-empty">
+            폴더가 없습니다.<br/>상단 + 버튼으로 폴더를 생성하세요.
+          </div>
+          <div
+            v-for="folder in filteredFolders"
+            :key="folder.folderId"
+            class="pbs-tree-node"
+          >
+            <div
+              class="pbs-tree-row"
+              :class="{ 'parent-active': isFolderActive(folder) }"
+              @click="toggleFolder(folder.folderId)"
+            >
+              <svg class="pbs-tree-chevron" :class="{ open: expandedFolders.has(folder.folderId) }" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+              <svg class="pbs-tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <span class="pbs-tree-label">{{ folder.folderName }}</span>
+              <span class="pbs-tree-count">{{ folder.pages?.length || 0 }}</span>
+              <button
+                class="pbs-tree-folder-delete-btn"
+                @click.stop="handleDeleteFolder(folder)"
+                title="폴더 삭제"
+              >
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
               </button>
-            </td>
-          </tr>
-          <tr v-if="pbs.length === 0">
-            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px">
-              {{ loading ? '불러오는 중...' : '등록된 콘텐츠가 없습니다.' }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </div>
+            <div class="pbs-tree-sub" :class="{ open: expandedFolders.has(folder.folderId) }">
+              <div
+                v-for="page in folder.pages"
+                :key="page.pageId"
+                class="pbs-tree-sub-item-wrapper"
+              >
+                <div
+                  class="pbs-tree-sub-item"
+                  :class="{ active: selectedPageId === page.pageId }"
+                  @click="selectPage(page.pageId)"
+                >
+                  <span>{{ page.title }}</span>
+                </div>
+                <button
+                  class="pbs-tree-delete-btn"
+                  @click.stop="handleDeletePage(page, folder)"
+                  title="삭제"
+                >
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
 
-    <Pagination
-      :current-page="currentPage"
-      :total-items="pbs.length"
-      :items-per-page="itemsPerPage"
-      @page-change="onPageChange"
-    />
+      <!-- ── Panel 2: Bible ── -->
+      <div class="pbs-panel pbs-panel-bible">
+        <div class="pbs-panel-header">
+          <div class="pbs-panel-title">
+            <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            성경 말씀
+          </div>
+        </div>
+        <div class="pbs-bible-body">
+          <div class="pbs-bible-select-row">
+            <select class="pbs-bible-testament-select" v-model="bible.testament" @change="onTestamentChange">
+              <option value="">신구약</option>
+              <option value="OLD">구약</option>
+              <option value="NEW">신약</option>
+            </select>
+            <select class="pbs-bible-book-select" v-model="bible.bookCode" @change="onBookChange" :disabled="!bible.bookCode && filteredBooks.length === 0">
+              <option value="">성경</option>
+              <option v-for="b in filteredBooks" :key="b.code" :value="b.code">{{ b.nameKr }}</option>
+            </select>
+            <select class="pbs-bible-num-select" v-model="bible.chapterFrom" @change="onChapterFromChange" :disabled="!bible.bookCode">
+              <option value="">장</option>
+              <option v-for="c in chapterList" :key="c" :value="c">{{ c }}</option>
+            </select>
+            <label class="pbs-bible-num-label">장</label>
+            <select class="pbs-bible-num-select" v-model="bible.verseFrom" @change="fetchBibleText" :disabled="!bible.bookCode">
+              <option value="">절</option>
+              <option v-for="v in verseList" :key="v" :value="v">{{ v }}</option>
+            </select>
+            <label class="pbs-bible-num-label">절</label>
+            <span class="pbs-bible-range-sep">~</span>
+            <select class="pbs-bible-num-select" v-model="bible.chapterTo" @change="onChapterToChange" :disabled="!bible.bookCode">
+              <option value="">장</option>
+              <option v-for="c in chapterList" :key="c" :value="c">{{ c }}</option>
+            </select>
+            <label class="pbs-bible-num-label">장</label>
+            <select class="pbs-bible-num-select" v-model="bible.verseTo" @change="fetchBibleText" :disabled="!bible.bookCode">
+              <option value="">절</option>
+              <option v-for="v in verseListTo" :key="v" :value="v">{{ v }}</option>
+            </select>
+            <label class="pbs-bible-num-label">절</label>
+          </div>
+          <div class="pbs-bible-tabs">
+            <button class="pbs-bible-tab" :class="{ active: bibleTab === 'sae' }" @click="bibleTab = 'sae'">새번역</button>
+            <button class="pbs-bible-tab" :class="{ active: bibleTab === 'gae' }" @click="bibleTab = 'gae'">개역개정</button>
+            <button class="pbs-bible-tab" :class="{ active: bibleTab === 'niv' }" @click="bibleTab = 'niv'">NIV</button>
+          </div>
+          <div class="pbs-bible-content">
+            <div v-if="bibleLoading" style="color: var(--text-muted)">성경 불러오는 중...</div>
+            <div v-else-if="currentBibleVerses.length > 0" v-html="bibleTextHtml"></div>
+            <div v-else style="color: var(--text-muted)">성경 구절을 선택하면 본문이 표시됩니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Panel 3: Title + Content ── -->
+      <div class="pbs-panel pbs-panel-content">
+        <div v-if="!currentPage" class="pbs-empty-state">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <div>페이지를 선택하거나 새로 생성하세요.</div>
+          <div style="font-size: 11px">트리에서 페이지를 클릭하거나 + 버튼으로 새 페이지를 만들 수 있습니다.</div>
+        </div>
+        <div v-else class="pbs-content-body">
+          <!-- Page Title -->
+          <div class="pbs-page-title-area">
+            <div class="pbs-page-meta-row">
+              <span class="pbs-page-meta-tag">성경공부</span>
+              <span class="pbs-page-status-tag" :class="{ published: currentPage.status === 'PUBLISHED', saving: saveStatus === 'saving' }">
+                {{ statusLabel }}
+              </span>
+              <div style="margin-left: auto; display: flex; gap: 8px;">
+                <button
+                  class="pbs-btn-publish"
+                  @click="handlePublish"
+                  :disabled="currentPage.status === 'PUBLISHED'"
+                >
+                  {{ currentPage.status === 'PUBLISHED' ? '배포됨' : '배포' }}
+                </button>
+              </div>
+            </div>
+            <input
+              class="pbs-page-title-edit"
+              type="text"
+              v-model="currentPage.title"
+              placeholder="제목을 입력하세요"
+              @input="onContentInput"
+            >
+          </div>
+
+          <!-- Content -->
+          <div class="pbs-content-card">
+            <div class="pbs-content-card-header">
+              <div class="pbs-content-card-icon">✎</div>
+              <div>
+                <div class="pbs-content-card-title">내용</div>
+                <div class="pbs-content-card-subtitle">입력하는 즉시 자동 저장됩니다</div>
+              </div>
+            </div>
+            <div class="pbs-content-card-body">
+              <textarea
+                class="pbs-content-textarea"
+                v-model="currentPage.content"
+                placeholder="내용을 자유롭게 작성하세요."
+                @input="onContentInput"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import '@/assets/css/pbs-list.css'
-import { ref, onMounted } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-import { pbsApi } from '@/api'
-import StatusBadge from '@/components/StatusBadge.vue'
-import Pagination from '@/components/Pagination.vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { pbsApi, bibleApi } from '@/api'
+import { useToast } from '@/composables/useToast'
 
-const router = useRouter()
+const { showToast } = useToast()
 
-interface Pb {
-  id: number; no: number; title: string; bibleRef: string; author: string; date: string; status: 'published' | 'draft' | 'archived'
+// ── Types ──
+interface PbsPage {
+  pageId: number
+  folderId: number
+  title: string
+  content: string
+  status: string
+  testament?: string
+  bookCode?: string
+  chapterFrom?: number
+  verseFrom?: number
+  chapterTo?: number
+  verseTo?: number
+}
+interface PbsFolder {
+  folderId: number
+  folderName: string
+  parentId?: number
+  sortOrder?: number
+  children?: PbsFolder[]
+  pages?: PbsPage[]
+}
+interface BookInfo {
+  code: string
+  nameKr: string
+  testament: string
+  chapterCount: number
 }
 
-const pbs = ref<Pb[]>([])
-const loading = ref(false)
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-const filterBook = ref('')
-const filterStatus = ref('')
-const searchText = ref('')
+// ── State ──
+const folders = ref<PbsFolder[]>([])
+const expandedFolders = ref<Set<number>>(new Set())
+const selectedPageId = ref<number | null>(null)
+const currentPage = ref<PbsPage | null>(null)
+const treeSearch = ref('')
+const saveStatus = ref<'idle' | 'saving' | 'saved'>('idle')
 
-async function fetchPbs() {
-  loading.value = true
-  try { const res = await pbsApi.getAll(); pbs.value = res.data } catch (e) { console.error('PBS 목록 조회 실패:', e); pbs.value = [] } finally { loading.value = false }
+// Bible state
+const bible = reactive({
+  testament: '' as string,
+  bookCode: '' as string,
+  chapterFrom: '' as string | number,
+  verseFrom: '' as string | number,
+  chapterTo: '' as string | number,
+  verseTo: '' as string | number,
+})
+const bibleTab = ref<'gae' | 'sae' | 'niv'>('sae')
+const bibleLoading = ref(false)
+const bibleCache = ref<{ gae: any[]; sae: any[]; niv: any[] }>({ gae: [], sae: [], niv: [] })
+const allBooks = ref<BookInfo[]>([])
+const verseList = ref<number[]>([])
+const verseListTo = ref<number[]>([])
+
+// ── Book max chapters (hardcoded fallback) ──
+const bookMaxChapters: Record<string, number> = {
+  'Gen': 50, 'Ex': 40, 'Lev': 27, 'Num': 36, 'Deut': 34,
+  'Josh': 24, 'Judg': 21, 'Ruth': 4, '1Sam': 31, '2Sam': 24,
+  '1Kgs': 22, '2Kgs': 25, '1Chr': 29, '2Chr': 36, 'Ezra': 10,
+  'Neh': 13, 'Esth': 10, 'Job': 42, 'Ps': 150, 'Prov': 31,
+  'Eccl': 12, 'Song': 8, 'Isa': 66, 'Jer': 52, 'Lam': 5,
+  'Ezek': 48, 'Dan': 12, 'Hos': 14, 'Joel': 3, 'Amos': 9,
+  'Obad': 1, 'Jonah': 4, 'Mic': 7, 'Nah': 3, 'Hab': 3,
+  'Zeph': 3, 'Hag': 2, 'Zech': 14, 'Mal': 4,
+  'Matt': 28, 'Mark': 16, 'Luke': 24, 'John': 21,
+  'Acts': 28, 'Rom': 16, '1Cor': 16, '2Cor': 13,
+  'Gal': 6, 'Eph': 6, 'Phil': 4, 'Col': 4,
+  '1Thess': 5, '2Thess': 3, '1Tim': 6, '2Tim': 4,
+  'Titus': 3, 'Phlm': 1, 'Heb': 13, 'Jas': 5,
+  '1Pet': 5, '2Pet': 3, '1John': 5, '2John': 1,
+  '3John': 1, 'Jude': 1, 'Rev': 22,
 }
 
-function resetFilter() { filterBook.value = ''; filterStatus.value = ''; searchText.value = ''; fetchPbs() }
-function goToDetail(id: number) { router.push(`/pbs/${id}`) }
-function onPageChange(page: number) { currentPage.value = page }
+// Version IDs: 개역개정=2, 새번역=3, NIV=6
+const versionIds: Record<string, number> = { gae: 2, sae: 3, niv: 6 }
 
-onMounted(() => { fetchPbs() })
+// ── Computed ──
+const filteredFolders = computed(() => {
+  if (!treeSearch.value.trim()) return folders.value
+  const q = treeSearch.value.trim().toLowerCase()
+  return folders.value
+    .map(f => {
+      const pageMatch = (f.pages || []).filter(p => p.title.toLowerCase().includes(q))
+      if (f.folderName.toLowerCase().includes(q) || pageMatch.length > 0) {
+        return { ...f, pages: pageMatch.length > 0 ? pageMatch : f.pages }
+      }
+      return null
+    })
+    .filter(Boolean) as PbsFolder[]
+})
+
+const filteredBooks = computed(() => {
+  if (!bible.testament) return allBooks.value
+  const t = bible.testament.toUpperCase()
+  return allBooks.value.filter(b => (b.testament || '').toUpperCase() === t)
+})
+
+const chapterList = computed(() => {
+  if (!bible.bookCode) return []
+  const book = allBooks.value.find(b => b.code === bible.bookCode)
+  const max = book?.chapterCount || bookMaxChapters[bible.bookCode] || 1
+  return Array.from({ length: max }, (_, i) => i + 1)
+})
+
+const currentBibleVerses = computed(() => bibleCache.value[bibleTab.value] || [])
+
+const bibleTextHtml = computed(() => {
+  if (currentBibleVerses.value.length === 0) return ''
+  return currentBibleVerses.value
+    .map((v: any) => `<span class="verse-number">${v.verse}</span> ${v.content}`)
+    .join('<br>\n')
+})
+
+const statusLabel = computed(() => {
+  if (saveStatus.value === 'saving') return '저장 중...'
+  if (currentPage.value?.status === 'PUBLISHED') return '배포됨'
+  return '임시저장'
+})
+
+// ── API: Folders ──
+async function fetchFolders() {
+  try {
+    const res = await pbsApi.getFolders()
+    folders.value = res.data || []
+    // Auto-expand folders that have pages
+    folders.value.forEach(f => {
+      if (f.pages && f.pages.length > 0) {
+        expandedFolders.value.add(f.folderId)
+      }
+    })
+  } catch (e) {
+    console.error('폴더 조회 실패:', e)
+    showToast('폴더 목록을 불러오지 못했습니다.')
+  }
+}
+
+async function handleCreateFolder() {
+  const name = prompt('폴더 이름을 입력하세요', '새 폴더')
+  if (!name?.trim()) return
+  try {
+    await pbsApi.createFolder({ folderName: name.trim() })
+    showToast('폴더가 생성되었습니다.')
+    await fetchFolders()
+  } catch (e) {
+    console.error('폴더 생성 실패:', e)
+    showToast('폴더 생성 중 오류가 발생했습니다.')
+  }
+}
+
+async function handleDeleteFolder(folder: PbsFolder) {
+  if (!confirm(`'${folder.folderName}' 폴더와 하위 페이지를 모두 삭제하시겠습니까?`)) return
+  try {
+    await pbsApi.deleteFolder(folder.folderId)
+    showToast('폴더가 삭제되었습니다.')
+    if (selectedPageId.value && folder.pages?.some(p => p.pageId === selectedPageId.value)) {
+      selectedPageId.value = null
+      currentPage.value = null
+    }
+    await fetchFolders()
+  } catch (e) {
+    console.error('폴더 삭제 실패:', e)
+    showToast('폴더 삭제 중 오류가 발생했습니다.')
+  }
+}
+
+// ── API: Pages ──
+async function selectPage(pageId: number) {
+  if (selectedPageId.value === pageId && currentPage.value) return
+  selectedPageId.value = pageId
+  try {
+    const res = await pbsApi.getPage(pageId)
+    currentPage.value = res.data
+    // Populate bible selectors from page data
+    const p = res.data
+    bible.testament = p.testament || ''
+    bible.bookCode = p.bookCode || ''
+    bible.chapterFrom = p.chapterFrom || ''
+    bible.verseFrom = p.verseFrom || ''
+    bible.chapterTo = p.chapterTo || ''
+    bible.verseTo = p.verseTo || ''
+    saveStatus.value = 'idle'
+    // Fetch verse lists if book/chapter are set
+    if (bible.bookCode && bible.chapterFrom) {
+      await loadVerseLists()
+      await fetchBibleText()
+    }
+  } catch (e) {
+    console.error('페이지 조회 실패:', e)
+    showToast('페이지를 불러오지 못했습니다.')
+  }
+}
+
+async function handleCreatePage() {
+  // Find target folder — prefer expanded/active folder, else first folder
+  let targetFolderId: number | null = null
+  // Check if any folder is expanded; use the first expanded one
+  for (const f of folders.value) {
+    if (expandedFolders.value.has(f.folderId)) {
+      targetFolderId = f.folderId
+      break
+    }
+  }
+  if (targetFolderId === null && folders.value.length > 0) {
+    targetFolderId = folders.value[0].folderId
+  }
+  if (targetFolderId === null) {
+    showToast('먼저 폴더를 생성하세요.')
+    return
+  }
+  try {
+    const res = await pbsApi.createPage({ folderId: targetFolderId })
+    showToast('새 페이지가 생성되었습니다.')
+    await fetchFolders()
+    // Expand the folder
+    expandedFolders.value.add(targetFolderId)
+    // Select the new page
+    const newPageId = res.data.pageId || res.data.pageId
+    if (newPageId) {
+      await selectPage(newPageId)
+    }
+  } catch (e) {
+    console.error('페이지 생성 실패:', e)
+    showToast('페이지 생성 중 오류가 발생했습니다.')
+  }
+}
+
+async function handleDeletePage(page: PbsPage, folder: PbsFolder) {
+  if (!confirm(`'${page.title}' 페이지를 삭제하시겠습니까?`)) return
+  try {
+    await pbsApi.deletePage(page.pageId)
+    showToast('페이지가 삭제되었습니다.')
+    if (selectedPageId.value === page.pageId) {
+      selectedPageId.value = null
+      currentPage.value = null
+    }
+    await fetchFolders()
+  } catch (e) {
+    console.error('페이지 삭제 실패:', e)
+    showToast('페이지 삭제 중 오류가 발생했습니다.')
+  }
+}
+
+// ── Autosave (debounced) ──
+let autoSaveTimer: ReturnType<typeof setTimeout> | undefined
+let pendingPageUpdate = false
+
+function onContentInput() {
+  if (!currentPage.value) return
+  saveStatus.value = 'saving'
+  pendingPageUpdate = true
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  autoSaveTimer = setTimeout(doAutoSave, 800)
+}
+
+async function doAutoSave() {
+  if (!currentPage.value || !pendingPageUpdate) return
+  pendingPageUpdate = false
+  try {
+    // Use updatePage (full update) to ensure both title and content are saved
+    // The /content endpoint only saves content, not title
+    await pbsApi.updatePage(currentPage.value.pageId, {
+      title: currentPage.value.title,
+      content: currentPage.value.content,
+      testament: currentPage.value.testament || undefined,
+      bookCode: currentPage.value.bookCode || undefined,
+      chapterFrom: currentPage.value.chapterFrom,
+      verseFrom: currentPage.value.verseFrom,
+      chapterTo: currentPage.value.chapterTo,
+      verseTo: currentPage.value.verseTo,
+    })
+    saveStatus.value = 'saved'
+    // Update tree title
+    updateTreePageTitle(currentPage.value.pageId, currentPage.value.title)
+  } catch (e) {
+    // Fallback: try updateContent (content-only) if updatePage fails
+    try {
+      await pbsApi.updateContent(currentPage.value.pageId, {
+        title: currentPage.value.title,
+        content: currentPage.value.content,
+      })
+      saveStatus.value = 'saved'
+      updateTreePageTitle(currentPage.value.pageId, currentPage.value.title)
+    } catch (e2) {
+      console.error('자동저장 실패:', e2)
+      saveStatus.value = 'idle'
+      showToast('자동저장 중 오류가 발생했습니다.')
+    }
+  }
+}
+
+function updateTreePageTitle(pageId: number, title: string) {
+  for (const f of folders.value) {
+    const p = f.pages?.find(pg => pg.pageId === pageId)
+    if (p) { p.title = title; break }
+  }
+}
+
+// ── Publish ──
+async function handlePublish() {
+  if (!currentPage.value) return
+  if (currentPage.value.status === 'PUBLISHED') return
+  // Save pending changes first
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  if (pendingPageUpdate) await doAutoSave()
+  if (!confirm('페이지를 배포하시겠습니까?')) return
+  try {
+    await pbsApi.publishPage(currentPage.value.pageId)
+    currentPage.value.status = 'PUBLISHED'
+    showToast('페이지가 배포되었습니다.')
+    await fetchFolders()
+  } catch (e) {
+    console.error('배포 실패:', e)
+    showToast('배포 중 오류가 발생했습니다.')
+  }
+}
+
+// ── Tree interactions ──
+function toggleFolder(folderId: number) {
+  if (expandedFolders.value.has(folderId)) {
+    expandedFolders.value.delete(folderId)
+  } else {
+    expandedFolders.value.add(folderId)
+  }
+}
+
+function isFolderActive(folder: PbsFolder): boolean {
+  return expandedFolders.value.has(folder.folderId) ||
+    (folder.pages?.some(p => p.pageId === selectedPageId.value) ?? false)
+}
+
+// ── Bible selectors ──
+function onTestamentChange() {
+  bible.bookCode = ''
+  bible.chapterFrom = ''
+  bible.chapterTo = ''
+  bible.verseFrom = ''
+  bible.verseTo = ''
+  verseList.value = []
+  verseListTo.value = []
+  bibleCache.value = { gae: [], sae: [], niv: [] }
+}
+
+function onBookChange() {
+  bible.chapterFrom = ''
+  bible.chapterTo = ''
+  bible.verseFrom = ''
+  bible.verseTo = ''
+  verseList.value = []
+  verseListTo.value = []
+  bibleCache.value = { gae: [], sae: [], niv: [] }
+  // Save bookCode to page
+  saveBibleMeta()
+}
+
+async function onChapterFromChange() {
+  bible.verseFrom = ''
+  bible.verseTo = ''
+  verseList.value = []
+  verseListTo.value = []
+  if (!bible.bookCode || !bible.chapterFrom) return
+  await loadVerseLists()
+  await fetchBibleText()
+  saveBibleMeta()
+}
+
+function onChapterToChange() {
+  bible.verseTo = ''
+  verseListTo.value = verseList.value
+  fetchBibleText()
+  saveBibleMeta()
+}
+
+async function loadVerseLists() {
+  if (!bible.bookCode || !bible.chapterFrom) return
+  try {
+    const res = await bibleApi.getVerses(bible.bookCode, Number(bible.chapterFrom), undefined, undefined, undefined, 2)
+    verseList.value = (res.data || []).map((v: any) => v.verse)
+    verseListTo.value = verseList.value
+  } catch {
+    verseList.value = []
+    verseListTo.value = []
+  }
+}
+
+async function fetchBibleText() {
+  if (!bible.bookCode || !bible.chapterFrom) {
+    bibleCache.value = { gae: [], sae: [], niv: [] }
+    return
+  }
+  const chapter = Number(bible.chapterFrom)
+  const vFrom = bible.verseFrom ? Number(bible.verseFrom) : undefined
+  const vTo = bible.verseTo ? Number(bible.verseTo) : undefined
+  // If chapterTo is set and different, use range; otherwise use chapterFrom
+  const chTo = bible.chapterTo ? Number(bible.chapterTo) : chapter
+
+  bibleLoading.value = true
+  try {
+    const [gaeRes, saeRes, nivRes] = await Promise.all([
+      bibleApi.getVerses(bible.bookCode, chapter, vFrom, chTo, vTo, versionIds.gae),
+      bibleApi.getVerses(bible.bookCode, chapter, vFrom, chTo, vTo, versionIds.sae),
+      bibleApi.getVerses(bible.bookCode, chapter, vFrom, chTo, vTo, versionIds.niv),
+    ])
+    bibleCache.value = {
+      gae: gaeRes.data || [],
+      sae: saeRes.data || [],
+      niv: nivRes.data || [],
+    }
+  } catch (e) {
+    console.error('성경 조회 실패:', e)
+    bibleCache.value = { gae: [], sae: [], niv: [] }
+  } finally {
+    bibleLoading.value = false
+  }
+}
+
+// Save bible metadata (testament, bookCode, chapters, verses) to page
+let bibleMetaTimer: ReturnType<typeof setTimeout> | undefined
+function saveBibleMeta() {
+  if (!currentPage.value) return
+  if (bibleMetaTimer) clearTimeout(bibleMetaTimer)
+  bibleMetaTimer = setTimeout(async () => {
+    if (!currentPage.value) return
+    try {
+      await pbsApi.updatePage(currentPage.value.pageId, {
+        title: currentPage.value.title,
+        content: currentPage.value.content,
+        testament: bible.testament || undefined,
+        bookCode: bible.bookCode || undefined,
+        chapterFrom: bible.chapterFrom ? Number(bible.chapterFrom) : undefined,
+        verseFrom: bible.verseFrom ? Number(bible.verseFrom) : undefined,
+        chapterTo: bible.chapterTo ? Number(bible.chapterTo) : undefined,
+        verseTo: bible.verseTo ? Number(bible.verseTo) : undefined,
+      })
+      // Update local page object
+      currentPage.value.testament = bible.testament || undefined
+      currentPage.value.bookCode = bible.bookCode || undefined
+      currentPage.value.chapterFrom = bible.chapterFrom ? Number(bible.chapterFrom) : undefined
+      currentPage.value.verseFrom = bible.verseFrom ? Number(bible.verseFrom) : undefined
+      currentPage.value.chapterTo = bible.chapterTo ? Number(bible.chapterTo) : undefined
+      currentPage.value.verseTo = bible.verseTo ? Number(bible.verseTo) : undefined
+    } catch (e) {
+      console.error('성경 메타 저장 실패:', e)
+    }
+  }, 1000)
+}
+
+// ── Init ──
+onMounted(async () => {
+  // Load bible books
+  try {
+    const res = await bibleApi.getBooks()
+    allBooks.value = (res.data || []).map((b: any) => ({
+      code: b.bookCode || b.book_code,
+      nameKr: b.bookNameKr || b.book_name_kr,
+      testament: b.testament,
+      chapterCount: b.chapterCount || 0,
+    }))
+  } catch (e) {
+    console.error('성경 책 목록 로드 실패:', e)
+  }
+  await fetchFolders()
+})
+
+// Re-fetch bible text when tab changes (cache is already populated, just switch)
+watch(bibleTab, () => {
+  // No API call needed — cache is already populated
+})
 </script>

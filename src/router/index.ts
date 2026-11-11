@@ -31,7 +31,6 @@ const router = createRouter({
         { path: 'qts', name: 'qtList', component: () => import('@/views/QtListView.vue') },
         { path: 'qts/:id', name: 'qtDetail', component: () => import('@/views/QtDetailView.vue') },
         { path: 'pbs', name: 'pbsList', component: () => import('@/views/PbsListView.vue') },
-        { path: 'pbs/:id', name: 'pbsDetail', component: () => import('@/views/PbsDetailView.vue') },
         { path: 'readings', name: 'readingList', component: () => import('@/views/ReadingListView.vue') },
         { path: 'readings/:id', name: 'readingDetail', component: () => import('@/views/ReadingDetailView.vue') },
         // Placeholder routes (no view component — inline render)

@@ -81,13 +81,28 @@ export const qtDailyApi = {
   getByDate: (date: string, source?: string) => api.get('/qt-daily/by-date', { params: { date, ...(source ? { source } : {}) } }),
 }
 
-// PBS API
+// PBS API — folders + pages (Confluence-style 3-split)
 export const pbsApi = {
+  // Legacy (kept for backward compat)
   getAll: () => api.get('/pbs'),
   getById: (id: number) => api.get(`/pbs/${id}`),
   create: (data: any) => api.post('/pbs', data),
   update: (id: number, data: any) => api.put(`/pbs/${id}`, data),
   delete: (id: number) => api.delete(`/pbs/${id}`),
+
+  // Folders
+  getFolders: () => api.get('/pbs/folders'),
+  createFolder: (data: { folderName: string; parentId?: number }) => api.post('/pbs/folders', data),
+  updateFolder: (id: number, data: { folderName?: string; sortOrder?: number }) => api.put(`/pbs/folders/${id}`, data),
+  deleteFolder: (id: number) => api.delete(`/pbs/folders/${id}`),
+
+  // Pages
+  getPage: (id: number) => api.get(`/pbs/pages/${id}`),
+  createPage: (data: { folderId: number }) => api.post('/pbs/pages', data),
+  updateContent: (id: number, data: { title?: string; content?: string }) => api.put(`/pbs/pages/${id}/content`, data),
+  publishPage: (id: number) => api.put(`/pbs/pages/${id}/publish`),
+  updatePage: (id: number, data: { title: string; content: string; testament?: string; bookCode?: string; chapterFrom?: number; verseFrom?: number; chapterTo?: number; verseTo?: number }) => api.put(`/pbs/pages/${id}`, data),
+  deletePage: (id: number) => api.delete(`/pbs/pages/${id}`),
 }
 
 // Reading Note API
