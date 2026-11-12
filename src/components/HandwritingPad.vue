@@ -99,9 +99,12 @@ let ctx: CanvasRenderingContext2D | null = null
 
 function open() {
   show.value = true
-  canvasHeight.value = 400
   nextTick(() => {
-    initCanvas()
+    const wrap = canvasWrapRef.value
+    canvasHeight.value = wrap
+      ? Math.max(200, wrap.clientHeight - 24)
+      : Math.max(200, window.innerHeight - 300)
+    nextTick(initCanvas)
   })
 }
 
@@ -110,7 +113,7 @@ function initCanvas() {
   if (!canvas) return
 
   const wrap = canvasWrapRef.value
-  const w = wrap?.clientWidth ? wrap.clientWidth - 24 : window.innerWidth - 80
+  const w = wrap?.clientWidth ? wrap.clientWidth - 24 : window.innerWidth - 24
   const h = canvasHeight.value
 
   canvas.width = w
@@ -158,10 +161,8 @@ function changeHeight(delta: number) {
 function addPage() {
   changeHeight(200)
   nextTick(() => {
-    const overlay = document.querySelector('.handwriting-overlay')
-    if (overlay) {
-      overlay.scrollTop = overlay.scrollHeight
-    }
+    const wrap = canvasWrapRef.value
+    if (wrap) wrap.scrollTop = wrap.scrollHeight
   })
 }
 
@@ -263,33 +264,31 @@ defineExpose({ open })
 <style scoped>
 .handwriting-overlay {
   position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  background: #fff;
   z-index: 9999;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 20px 0;
+  overflow: hidden;
 }
 .handwriting-container {
   background: #fff;
-  border-radius: 16px;
-  width: 95vw;
-  max-width: 800px;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  margin: auto;
+  margin: 0;
 }
 .handwriting-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 10px 16px;
   border-bottom: 1px solid #e0d5c7;
   flex-shrink: 0;
 }
@@ -309,8 +308,8 @@ defineExpose({ open })
 .handwriting-toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: 10px;
+  padding: 8px 12px;
   border-bottom: 1px solid #f0ebe5;
   flex-wrap: wrap;
   flex-shrink: 0;
@@ -394,7 +393,7 @@ defineExpose({ open })
 }
 /* 스크롤 안내 */
 .hw-scroll-hint {
-  padding: 6px 16px;
+  padding: 6px 12px;
   font-size: 11px;
   color: #94a3b8;
   background: #faf7f2;
@@ -402,16 +401,20 @@ defineExpose({ open })
   flex-shrink: 0;
 }
 
-/* 캔버스 영역 — 캔버스 크기에 맞춰 자연스럽게 늘어남 */
+/* 남는 세로 공간을 필기 캔버스가 채우고, 페이지 추가 시 이 영역만 스크롤 */
 .handwriting-canvas-wrap {
   flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 10px 12px;
-  display: block;
+  box-sizing: border-box;
   background: #f9f5f0;
 }
 .handwriting-canvas-wrap canvas {
   display: block;
   width: 100%;
+  box-sizing: border-box;
   border: 2px solid #e0d5c7;
   border-radius: 8px;
   background: #fff;
@@ -422,7 +425,7 @@ defineExpose({ open })
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding: 12px 20px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
   border-top: 1px solid #e0d5c7;
   flex-shrink: 0;
 }

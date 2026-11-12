@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { Capacitor } from '@capacitor/core'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: Capacitor.isNativePlatform() ? (import.meta.env.VITE_API_BASE_URL || '/api') : '/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

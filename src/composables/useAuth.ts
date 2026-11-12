@@ -24,8 +24,26 @@ function checkSessionExpired(): boolean {
   return elapsed > SESSION_TIMEOUT_MS
 }
 
+function readStoredJson<T>(key: string, fallback: T): T {
+  const value = localStorage.getItem(key)
+  if (!value || value === 'undefined' || value === 'null') {
+    if (value) localStorage.removeItem(key)
+    return fallback
+  }
+  try {
+    return JSON.parse(value) as T
+  } catch {
+    localStorage.removeItem(key)
+    return fallback
+  }
+}
+
 function initSession() {
-  const savedToken = localStorage.getItem('holylife_token')
+  const storedToken = localStorage.getItem('holylife_token')
+  const savedToken = storedToken && storedToken !== 'undefined' && storedToken !== 'null'
+    ? storedToken
+    : null
+  if (storedToken && !savedToken) localStorage.removeItem('holylife_token')
   if (savedToken && checkSessionExpired()) {
     // 세션 만료 — 저장된 데이터 삭제
     localStorage.removeItem('holylife_token')
@@ -37,8 +55,8 @@ function initSession() {
   }
   return {
     token: savedToken,
-    user: JSON.parse(localStorage.getItem('holylife_user') || 'null'),
-    menus: JSON.parse(localStorage.getItem('holylife_menus') || '[]'),
+    user: readStoredJson<any>('holylife_user', null),
+    menus: readStoredJson<any[]>('holylife_menus', []),
   }
 }
 
