@@ -14,9 +14,9 @@
             v-for="c in colors"
             :key="c"
             class="hw-color-btn"
-            :class="{ active: currentColor === c }"
+            :class="{ active: currentColor === c && mode === 'pen' }"
             :style="{ background: c }"
-            @click="currentColor = c"
+            @click="setColor(c)"
           ></button>
         </div>
 
@@ -25,24 +25,30 @@
             v-for="s in sizes"
             :key="s.value"
             class="hw-size-btn"
-            :class="{ active: currentSize === s.value }"
-            @click="currentSize = s.value"
+            :class="{ active: currentSize === s.value && mode === 'pen' }"
+            @click="setSize(s.value)"
           >{{ s.label }}</button>
         </div>
 
         <div class="hw-tool-group">
-          <button class="hw-tool-btn" :class="{ active: mode === 'eraser' }" @click="mode = 'eraser'">지우개</button>
-          <button class="hw-tool-btn" @click="undo">↶ 취소</button>
-          <button class="hw-tool-btn" @click="clearCanvas">전체 지움</button>
+          <button
+            class="hw-tool-btn"
+            :class="{ active: mode === 'eraser' }"
+            :aria-pressed="mode === 'eraser'"
+            title="지우개 (다시 클릭하면 펜으로 전환)"
+            @click="toggleEraser"
+          >지우개</button>
+          <button class="hw-tool-btn" @click="runWithPen(undo)">↶ 취소</button>
+          <button class="hw-tool-btn" @click="runWithPen(clearCanvas)">전체 지움</button>
         </div>
 
         <!-- 캔버스 높이 조절 -->
         <div class="hw-tool-group hw-height-group">
           <span class="hw-height-label">캔버스 높이</span>
-          <button class="hw-height-btn" @click="changeHeight(-200)">−</button>
+          <button class="hw-height-btn" @click="runWithPen(() => changeHeight(-200))">−</button>
           <span class="hw-height-value">{{ canvasHeight }}px</span>
-          <button class="hw-height-btn" @click="changeHeight(200)">+</button>
-          <button class="hw-tool-btn" @click="addPage">📄 페이지 추가</button>
+          <button class="hw-height-btn" @click="runWithPen(() => changeHeight(200))">+</button>
+          <button class="hw-tool-btn" @click="runWithPen(addPage)">📄 페이지 추가</button>
         </div>
       </div>
 
@@ -86,6 +92,39 @@ const currentSize = ref(3)
 const mode = ref<'pen' | 'eraser'>('pen')
 const canvasHeight = ref(500)
 
+/* ── 도구 전환 ───────────────────────────────────────────
+ * 지우개는 토글: 활성 → 다시 클릭하면 펜으로 복귀
+ * 그 외 도구(색상/굵기/취소/전체지움/높이/페이지)를 누르면 항상 펜으로 복귀
+ */
+function toggleEraser() {
+  mode.value = mode.value === 'eraser' ? 'pen' : 'eraser'
+  applyCursor()
+}
+
+function setColor(color: string) {
+  currentColor.value = color
+  mode.value = 'pen'
+  applyCursor()
+}
+
+function setSize(size: number) {
+  currentSize.value = size
+  mode.value = 'pen'
+  applyCursor()
+}
+
+function runWithPen(action: () => void) {
+  mode.value = 'pen'
+  applyCursor()
+  action()
+}
+
+function applyCursor() {
+  const canvas = canvasRef.value
+  if (!canvas) return
+  canvas.style.cursor = mode.value === 'eraser' ? 'cell' : 'crosshair'
+}
+
 const colors = ['#000000', '#c97d4e', '#e74c3c', '#2980b9', '#27ae60', '#8e44ad']
 const sizes = [
   { label: '얇음', value: 2 },
@@ -99,12 +138,16 @@ let ctx: CanvasRenderingContext2D | null = null
 
 function open() {
   show.value = true
+  mode.value = 'pen'
   nextTick(() => {
     const wrap = canvasWrapRef.value
     canvasHeight.value = wrap
       ? Math.max(200, wrap.clientHeight - 24)
       : Math.max(200, window.innerHeight - 300)
-    nextTick(initCanvas)
+    nextTick(() => {
+      initCanvas()
+      applyCursor()
+    })
   })
 }
 
