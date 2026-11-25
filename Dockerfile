@@ -24,6 +24,6 @@ COPY --from=builder /build/dist /usr/share/nginx/html
 # Nginx 설정 복사
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]
